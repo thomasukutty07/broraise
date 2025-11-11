@@ -6,7 +6,7 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
-export async function uploadFile(file: File | Buffer, folder: string = 'bcms'): Promise<string> {
+export async function uploadFile(file: File | Buffer, folder: string = 'broraise'): Promise<string> {
   try {
     let buffer: Buffer;
     if (file instanceof File) {

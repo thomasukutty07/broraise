@@ -58,7 +58,7 @@ export default function LoginPage() {
             <div className="flex size-7 sm:size-8 items-center justify-center rounded-lg bg-primary text-primary-foreground shrink-0">
               <FileText className="size-4 sm:size-5" />
             </div>
-            <span className="text-base sm:text-xl font-bold truncate block overflow-hidden text-ellipsis">BCMS</span>
+            <span className="text-base sm:text-xl font-bold truncate block overflow-hidden text-ellipsis">BroRaise</span>
           </Link>
           
           <div className="flex items-center gap-1.5 sm:gap-2 md:gap-3 lg:gap-4 shrink-0 min-w-0">
@@ -106,7 +106,7 @@ export default function LoginPage() {
                 <FileText className="size-8" />
               </div>
               <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                BCMS
+                BroRaise
               </h1>
             </div>
             <h2 className="text-3xl font-bold text-foreground">

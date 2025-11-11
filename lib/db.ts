@@ -2,7 +2,7 @@ import mongoose from 'mongoose';
 // Import all models to ensure they are registered
 import '@/models';
 
-const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/bcms';
+const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/broraise';
 
 if (!MONGODB_URI) {
   throw new Error('Please define the MONGODB_URI environment variable inside .env.local');

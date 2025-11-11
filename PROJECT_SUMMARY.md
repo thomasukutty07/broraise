@@ -1,4 +1,4 @@
-# BCMS Project Summary
+# BroRaise Project Summary
 
 ## ✅ Completed Features
 

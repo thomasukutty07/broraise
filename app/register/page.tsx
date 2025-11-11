@@ -74,7 +74,7 @@ export default function RegisterPage() {
             <div className="flex size-7 sm:size-8 items-center justify-center rounded-lg bg-primary text-primary-foreground shrink-0">
               <FileText className="size-4 sm:size-5" />
             </div>
-            <span className="text-base sm:text-xl font-bold truncate block overflow-hidden text-ellipsis">BCMS</span>
+            <span className="text-base sm:text-xl font-bold truncate block overflow-hidden text-ellipsis">BroRaise</span>
           </Link>
           
           <div className="flex items-center gap-1.5 sm:gap-2 md:gap-3 lg:gap-4 shrink-0 min-w-0">
@@ -139,7 +139,7 @@ export default function RegisterPage() {
               </h1>
             </div>
             <h2 className="text-3xl font-bold text-foreground">
-              Join BCMS Today
+              Join BroRaise Today
             </h2>
             <p className="text-lg text-muted-foreground">
               Create your account and start managing complaints efficiently.
@@ -185,7 +185,7 @@ export default function RegisterPage() {
               Create your account
             </CardTitle>
             <CardDescription className="text-base mt-2">
-              Sign up for Brototype Complaint Management System
+              Sign up for BroRaise
             </CardDescription>
           </CardHeader>
         <CardContent>

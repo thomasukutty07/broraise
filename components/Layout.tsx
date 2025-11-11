@@ -100,7 +100,7 @@ export default function Layout({ children }: LayoutProps) {
               <div className="flex size-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
                 <FileText className="size-5" />
               </div>
-              <span className="text-xl font-bold">BCMS</span>
+              <span className="text-xl font-bold">BroRaise</span>
             </Link>
           </div>
           
@@ -199,7 +199,7 @@ export default function Layout({ children }: LayoutProps) {
                 <div className="flex size-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
                   <FileText className="size-5" />
                 </div>
-                <span className="text-xl font-bold">BCMS</span>
+                <span className="text-xl font-bold">BroRaise</span>
               </Link>
             </div>
             

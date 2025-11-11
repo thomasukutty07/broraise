@@ -1,4 +1,4 @@
-# Brototype Complaint Management System (BCMS)
+# BroRaise - Complaint Management System
 
 A comprehensive web platform for managing student complaints, suggestions, and feedback with full transparency and accountability.
 

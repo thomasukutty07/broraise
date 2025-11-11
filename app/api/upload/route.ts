@@ -21,7 +21,7 @@ async function handler(req: AuthenticatedRequest) {
       return NextResponse.json({ error: 'Invalid file type' }, { status: 400 });
     }
 
-    const url = await uploadFile(file, 'bcms/complaints');
+    const url = await uploadFile(file, 'broraise/complaints');
     return NextResponse.json({ url });
   } catch (error: any) {
     return NextResponse.json({ error: error.message || 'Upload failed' }, { status: 500 });

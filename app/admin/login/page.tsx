@@ -58,7 +58,7 @@ export default function AdminLoginPage() {
             <div className="flex size-7 sm:size-8 items-center justify-center rounded-lg bg-gradient-to-br from-indigo-600 to-purple-600 text-white shrink-0">
               <Shield className="size-4 sm:size-5" />
             </div>
-            <span className="text-base sm:text-xl font-bold truncate block overflow-hidden text-ellipsis">BCMS Admin</span>
+            <span className="text-base sm:text-xl font-bold truncate block overflow-hidden text-ellipsis">BroRaise Admin</span>
           </Link>
           
           <div className="flex items-center gap-1.5 sm:gap-2 md:gap-3 lg:gap-4 shrink-0 min-w-0">

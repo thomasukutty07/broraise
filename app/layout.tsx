@@ -16,8 +16,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "BCMS - Brototype Complaint Management System",
-  description: "Complaint Management System for Brototype",
+  title: "BroRaise - Complaint Management System",
+  description: "Complaint Management System",
   viewport: {
     width: "device-width",
     initialScale: 1,
