@@ -108,11 +108,11 @@ async function createHandler(req: AuthenticatedRequest) {
     // Get submitter information for notification
     // Handle both populated object and ID cases
     const submittedBy = populatedComplaint.submittedBy;
-    const submitterName = (submittedBy && typeof submittedBy === 'object' && 'name' in submittedBy) 
-      ? submittedBy.name 
+    const submitterName: string = (submittedBy && typeof submittedBy === 'object' && 'name' in submittedBy) 
+      ? (submittedBy.name as string)
       : (user?.name || 'Unknown');
-    const submitterEmail = (submittedBy && typeof submittedBy === 'object' && 'email' in submittedBy)
-      ? submittedBy.email
+    const submitterEmail: string = (submittedBy && typeof submittedBy === 'object' && 'email' in submittedBy)
+      ? (submittedBy.email as string)
       : (user?.email || '');
     
     const notificationData = {
