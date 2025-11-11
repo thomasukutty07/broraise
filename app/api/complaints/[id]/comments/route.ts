@@ -57,6 +57,10 @@ async function createHandler(req: AuthenticatedRequest, context?: { params?: Pro
       const submittedByUser = await User.findById(complaint.submittedBy);
       const commenterUser = await User.findById(req.user!.userId);
 
+      if (!commenterUser) {
+        return NextResponse.json({ error: 'User not found' }, { status: 404 });
+      }
+
       if (submittedByUser && commenterUser._id.toString() !== submittedByUser._id.toString()) {
         const emailTemplate = getComplaintEmailTemplate(
           'updated',
