@@ -10,6 +10,13 @@ interface User {
   role: string;
   branch?: string;
   avatar?: string;
+  emailNotifications?: {
+    newComplaint?: boolean;
+    statusUpdate?: boolean;
+    comment?: boolean;
+    assignment?: boolean;
+    reminder?: boolean;
+  };
 }
 
 interface AuthContextType {
