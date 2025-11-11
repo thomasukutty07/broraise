@@ -1,4 +1,4 @@
-import { NextRequest } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { Server as HTTPServer } from 'http';
 import { Server as SocketIOServer } from 'socket.io';
 import { getSocketIO, initializeSocket } from '@/lib/socket-server';
@@ -9,12 +9,9 @@ import { requireAuth, AuthenticatedRequest } from '@/lib/middleware';
 // For now, we'll create a simple route that can be used to check Socket.io status
 
 async function handler(req: AuthenticatedRequest) {
-  return new Response(JSON.stringify({ 
+  return NextResponse.json({ 
     status: 'Socket.io server is running',
     connected: getSocketIO() !== null 
-  }), {
-    status: 200,
-    headers: { 'Content-Type': 'application/json' },
   });
 }
 
