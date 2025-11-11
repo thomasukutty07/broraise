@@ -8,6 +8,7 @@ import { createAuditLog } from '@/lib/audit';
 import { sendEmail, getComplaintEmailTemplate } from '@/lib/email';
 import User from '@/models/User';
 import { emitToUser, emitToRole } from '@/lib/socket-helper';
+import mongoose from 'mongoose';
 
 async function getHandler(req: AuthenticatedRequest, context?: { params?: Promise<{ id: string }> | { id: string } }) {
   try {
@@ -77,7 +78,7 @@ async function updateHandler(req: AuthenticatedRequest, context?: { params?: Pro
         return NextResponse.json({ error: 'Only admins can assign complaints' }, { status: 403 });
       }
       
-      complaint.assignedTo = validatedData.assignedTo ? validatedData.assignedTo : undefined;
+      complaint.assignedTo = validatedData.assignedTo ? new mongoose.Types.ObjectId(validatedData.assignedTo) : undefined;
     }
 
     if (validatedData.resolution) {
