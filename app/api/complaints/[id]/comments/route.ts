@@ -53,6 +53,10 @@ async function createHandler(req: AuthenticatedRequest, context?: { params?: Pro
     const populatedComment = await Comment.findById(comment._id)
       .populate('author', 'name email avatar role');
 
+    if (!populatedComment) {
+      return NextResponse.json({ error: 'Failed to retrieve created comment' }, { status: 500 });
+    }
+
     if (!validatedData.isInternal) {
       const submittedByUser = await User.findById(complaint.submittedBy);
       const commenterUser = await User.findById(req.user!.userId);

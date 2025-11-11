@@ -30,6 +30,10 @@ async function createHandler(req: AuthenticatedRequest) {
       .populate('createdBy', 'name email')
       .populate('assignedTo', 'name email');
 
+    if (!populated) {
+      return NextResponse.json({ error: 'Failed to retrieve created reminder' }, { status: 500 });
+    }
+
     return NextResponse.json(populated, { status: 201 });
   } catch (error: any) {
     if (error instanceof z.ZodError) {

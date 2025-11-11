@@ -49,6 +49,10 @@ async function createHandler(req: AuthenticatedRequest, context?: { params?: Pro
     const populatedFeedback = await Feedback.findById(feedback._id)
       .populate('submittedBy', 'name email');
 
+    if (!populatedFeedback) {
+      return NextResponse.json({ error: 'Failed to retrieve created feedback' }, { status: 500 });
+    }
+
     return NextResponse.json(populatedFeedback, { status: 201 });
   } catch (error: any) {
     if (error instanceof z.ZodError) {

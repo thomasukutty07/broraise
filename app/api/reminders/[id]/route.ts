@@ -44,6 +44,10 @@ async function patchHandler(req: AuthenticatedRequest, context?: { params?: Prom
       .populate('createdBy', 'name email')
       .populate('assignedTo', 'name email');
 
+    if (!populated) {
+      return NextResponse.json({ error: 'Failed to retrieve updated reminder' }, { status: 500 });
+    }
+
     return NextResponse.json(populated);
   } catch (error: any) {
     return NextResponse.json({ error: error.message || 'Failed to update reminder' }, { status: 500 });
