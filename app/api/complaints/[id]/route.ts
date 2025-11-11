@@ -77,7 +77,7 @@ async function updateHandler(req: AuthenticatedRequest, context?: { params?: Pro
         return NextResponse.json({ error: 'Only admins can assign complaints' }, { status: 403 });
       }
       
-      complaint.assignedTo = validatedData.assignedTo || null;
+      complaint.assignedTo = validatedData.assignedTo ? validatedData.assignedTo : undefined;
     }
 
     if (validatedData.resolution) {
