@@ -4,6 +4,7 @@
 import connectDB from './db';
 import Notification from '@/models/Notification';
 import User from '@/models/User';
+import mongoose from 'mongoose';
 
 interface NotificationData {
   type: 'new_complaint' | 'complaint_assigned' | 'complaint_updated' | 'new_comment' | 'status_changed';
@@ -25,16 +26,16 @@ export async function saveNotificationToDB(userId: string, data: NotificationDat
     await connectDB();
     
     await Notification.create({
-      userId,
+      userId: new mongoose.Types.ObjectId(userId),
+      complaintId: new mongoose.Types.ObjectId(data.complaintId),
       type: data.type,
-      complaintId: data.complaintId,
       title: data.title,
       message: data.message,
       status: data.status,
       submitterName: data.submitterName,
       submitterEmail: data.submitterEmail,
       commenterName: data.commenterName,
-      commenterId: data.commenterId,
+      commenterId: data.commenterId ? new mongoose.Types.ObjectId(data.commenterId) : undefined,
       read: false,
     });
     
@@ -59,15 +60,15 @@ export async function saveNotificationToRole(role: string, data: NotificationDat
     
     const notifications = users.map((user) => ({
       userId: user._id,
+      complaintId: new mongoose.Types.ObjectId(data.complaintId),
       type: data.type,
-      complaintId: data.complaintId,
       title: data.title,
       message: data.message,
       status: data.status,
       submitterName: data.submitterName,
       submitterEmail: data.submitterEmail,
       commenterName: data.commenterName,
-      commenterId: data.commenterId,
+      commenterId: data.commenterId ? new mongoose.Types.ObjectId(data.commenterId) : undefined,
       read: false,
     }));
     
@@ -90,16 +91,16 @@ export async function saveNotificationToUsers(userIds: string[], data: Notificat
     }
     
     const notifications = userIds.map((userId) => ({
-      userId,
+      userId: new mongoose.Types.ObjectId(userId),
+      complaintId: new mongoose.Types.ObjectId(data.complaintId),
       type: data.type,
-      complaintId: data.complaintId,
       title: data.title,
       message: data.message,
       status: data.status,
       submitterName: data.submitterName,
       submitterEmail: data.submitterEmail,
       commenterName: data.commenterName,
-      commenterId: data.commenterId,
+      commenterId: data.commenterId ? new mongoose.Types.ObjectId(data.commenterId) : undefined,
       read: false,
     }));
     

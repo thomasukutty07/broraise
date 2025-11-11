@@ -8,8 +8,14 @@ cloudinary.config({
 
 export async function uploadFile(file: File | Buffer, folder: string = 'bcms'): Promise<string> {
   try {
-    const buffer = file instanceof File ? await file.arrayBuffer() : file;
-    const base64 = Buffer.from(buffer).toString('base64');
+    let buffer: Buffer;
+    if (file instanceof File) {
+      const arrayBuffer = await file.arrayBuffer();
+      buffer = Buffer.from(new Uint8Array(arrayBuffer));
+    } else {
+      buffer = file;
+    }
+    const base64 = buffer.toString('base64');
     const dataURI = `data:application/octet-stream;base64,${base64}`;
 
     const result = await cloudinary.uploader.upload(dataURI, {
