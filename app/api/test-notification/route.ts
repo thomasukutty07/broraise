@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { requireAuth, AuthenticatedRequest } from '@/lib/middleware';
+import { requireAuth, requireRole, AuthenticatedRequest } from '@/lib/middleware';
 import { emitToUser } from '@/lib/socket-helper';
 
 async function handler(req: AuthenticatedRequest) {
