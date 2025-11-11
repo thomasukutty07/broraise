@@ -27,7 +27,20 @@ export async function apiRequest(
     let errorMessage = 'Request failed';
     try {
       const errorData = await response.json();
-      errorMessage = errorData.error || errorMessage;
+      
+      // Handle detailed error messages
+      if (errorData.details && Array.isArray(errorData.details)) {
+        errorMessage = errorData.details.join('. ');
+      } else if (errorData.error) {
+        // If error is an array (validation errors), format it
+        if (Array.isArray(errorData.error)) {
+          errorMessage = errorData.error.map((err: any) => 
+            err.message || `${err.path?.join('.')} is invalid`
+          ).join('. ');
+        } else {
+          errorMessage = errorData.error;
+        }
+      }
     } catch {
       // If response is not JSON, use status text
       errorMessage = response.statusText || errorMessage;

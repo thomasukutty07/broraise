@@ -147,12 +147,50 @@ export default function NewComplaintPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Client-side validation
+    if (!formData.title.trim()) {
+      toast.error('Title is required');
+      return;
+    }
+    
+    if (formData.title.trim().length < 5) {
+      toast.error('Title must be at least 5 characters long');
+      return;
+    }
+    
+    if (formData.title.trim().length > 200) {
+      toast.error('Title must be no more than 200 characters long');
+      return;
+    }
+    
+    if (!formData.description.trim()) {
+      toast.error('Description is required');
+      return;
+    }
+    
+    if (formData.description.trim().length < 10) {
+      toast.error('Description must be at least 10 characters long');
+      return;
+    }
+    
+    if (!formData.category) {
+      toast.error('Category is required');
+      return;
+    }
+    
     setLoading(true);
 
     try {
       const response = await apiRequest('/api/complaints', {
         method: 'POST',
-        body: JSON.stringify(formData),
+        body: JSON.stringify({
+          title: formData.title.trim(),
+          description: formData.description.trim(),
+          category: formData.category,
+          urgency: formData.urgency,
+          attachments: formData.attachments,
+        }),
       });
 
       const complaint = await response.json();

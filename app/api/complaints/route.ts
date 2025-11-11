@@ -137,8 +137,37 @@ async function createHandler(req: AuthenticatedRequest) {
     return NextResponse.json(populatedComplaint, { status: 201 });
   } catch (error: any) {
     if (error instanceof z.ZodError) {
-      return NextResponse.json({ error: error.errors }, { status: 400 });
+      // Format validation errors into user-friendly messages
+      const errorMessages = error.errors.map((err) => {
+        const field = err.path.join('.');
+        if (err.code === 'too_small') {
+          if (field === 'title') {
+            return 'Title must be at least 5 characters long';
+          } else if (field === 'description') {
+            return 'Description must be at least 10 characters long';
+          }
+        } else if (err.code === 'too_big') {
+          if (field === 'title') {
+            return 'Title must be no more than 200 characters long';
+          }
+        } else if (err.code === 'invalid_type') {
+          return `${field} has an invalid type`;
+        } else if (err.code === 'invalid_enum_value') {
+          return `${field} has an invalid value`;
+        }
+        return err.message || `${field} is invalid`;
+      });
+      
+      return NextResponse.json(
+        { 
+          error: errorMessages.length === 1 ? errorMessages[0] : 'Validation failed',
+          details: errorMessages.length > 1 ? errorMessages : undefined,
+          validationErrors: error.errors 
+        },
+        { status: 400 }
+      );
     }
+    console.error('Complaint creation error:', error);
     return NextResponse.json({ error: error.message || 'Failed to create complaint' }, { status: 500 });
   }
 }
