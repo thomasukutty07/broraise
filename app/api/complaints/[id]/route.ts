@@ -28,8 +28,13 @@ async function getHandler(req: AuthenticatedRequest, context?: { params?: Promis
       return NextResponse.json({ error: 'Complaint not found' }, { status: 404 });
     }
 
-    if (req.user!.role === 'student' && complaint.submittedBy._id.toString() !== req.user!.userId) {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    if (req.user!.role === 'student') {
+      const submittedById = typeof complaint.submittedBy === 'object' && complaint.submittedBy !== null && '_id' in complaint.submittedBy
+        ? (complaint.submittedBy as any)._id.toString()
+        : String(complaint.submittedBy);
+      if (submittedById !== req.user!.userId) {
+        return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+      }
     }
 
     return NextResponse.json(complaint);
@@ -103,6 +108,10 @@ async function updateHandler(req: AuthenticatedRequest, context?: { params?: Pro
       .populate('category', 'name')
       .populate('submittedBy', 'name email')
       .populate('assignedTo', 'name email');
+
+    if (!populatedComplaint) {
+      return NextResponse.json({ error: 'Failed to retrieve updated complaint' }, { status: 500 });
+    }
 
     const submittedByUser = await User.findById(complaint.submittedBy);
     if (submittedByUser) {

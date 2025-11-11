@@ -1,6 +1,7 @@
 import mongoose, { Schema, Document, Model } from 'mongoose';
 
 export interface IAuditLog extends Document {
+  _id: mongoose.Types.ObjectId;
   complaint: mongoose.Types.ObjectId;
   action: string;
   performedBy: mongoose.Types.ObjectId;

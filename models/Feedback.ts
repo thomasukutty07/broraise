@@ -1,6 +1,7 @@
 import mongoose, { Schema, Document, Model } from 'mongoose';
 
 export interface IFeedback extends Document {
+  _id: mongoose.Types.ObjectId;
   complaint: mongoose.Types.ObjectId;
   rating: number;
   comment?: string;

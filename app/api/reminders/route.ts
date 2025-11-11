@@ -45,7 +45,7 @@ async function listHandler(req: AuthenticatedRequest) {
     const { searchParams } = new URL(req.url);
     const complaintId = searchParams.get('complaintId');
     const upcoming = searchParams.get('upcoming') === 'true';
-    const completed = searchParams.get('completed') === 'true';
+    const completedParam = searchParams.get('completed');
 
     const filter: any = {};
     
@@ -63,8 +63,8 @@ async function listHandler(req: AuthenticatedRequest) {
       filter.isCompleted = false;
     }
     
-    if (completed !== undefined) {
-      filter.isCompleted = completed === 'true';
+    if (completedParam !== null) {
+      filter.isCompleted = completedParam === 'true';
     }
 
     const reminders = await Reminder.find(filter)

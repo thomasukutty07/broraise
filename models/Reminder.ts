@@ -1,6 +1,7 @@
 import mongoose, { Schema, Document, Model } from 'mongoose';
 
 export interface IReminder extends Document {
+  _id: mongoose.Types.ObjectId;
   complaint: mongoose.Types.ObjectId;
   createdBy: mongoose.Types.ObjectId;
   assignedTo: mongoose.Types.ObjectId;
