@@ -16,6 +16,9 @@ const createComplaintSchema = z.object({
   description: z.string().min(10),
   category: z.string(),
   urgency: z.enum(['low', 'medium', 'high', 'critical']).optional(),
+  priority: z.enum(['low', 'medium', 'high', 'urgent']).optional(),
+  dueDate: z.string().optional(),
+  tags: z.array(z.string()).optional(),
   attachments: z.array(z.string()).optional(),
 });
 

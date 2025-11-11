@@ -50,7 +50,7 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-blue-950/20 dark:via-indigo-950/20 dark:to-purple-950/20 w-full overflow-x-hidden box-border">
+    <div className="min-h-screen flex flex-col bg-background w-full overflow-x-hidden box-border">
       {/* Header */}
       <nav className="border-b bg-background/95 backdrop-blur sticky top-0 z-50 w-full overflow-hidden">
         <div className="container mx-auto flex h-14 sm:h-16 items-center justify-between px-3 sm:px-4 lg:px-6 max-w-7xl w-full box-border">
@@ -92,50 +92,72 @@ export default function LoginPage() {
         </div>
       </nav>
 
-      <div className="flex-1 flex">
-      {/* Left Side - Creative Elements */}
-      <div className="hidden lg:flex lg:w-1/2 items-center justify-center p-8 relative overflow-hidden">
-        <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <div className="absolute top-20 left-10 size-72 bg-blue-300/20 dark:bg-blue-500/10 rounded-full blur-3xl animate-pulse"></div>
-          <div className="absolute bottom-20 right-10 size-96 bg-purple-300/20 dark:bg-purple-500/10 rounded-full blur-3xl animate-pulse delay-1000"></div>
+      <div className="flex-1 flex relative overflow-hidden">
+        {/* Geometric Pattern Background - Applied to parent */}
+        <div className="absolute inset-0 opacity-[0.03] dark:opacity-[0.05] pointer-events-none">
+          <div className="absolute inset-0" style={{
+            backgroundImage: `repeating-linear-gradient(45deg, transparent, transparent 35px, currentColor 35px, currentColor 70px)`,
+          }}></div>
         </div>
-        <div className="relative z-10 max-w-md space-y-8">
-          <div className="space-y-4">
-            <div className="flex items-center gap-3">
-              <div className="flex size-14 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-500 to-purple-600 text-white shadow-xl">
-                <FileText className="size-8" />
+        
+      {/* Left Side - Modern Design */}
+      <div className="hidden lg:flex lg:w-1/2 items-center justify-center p-12 relative z-10">
+        {/* Content */}
+        <div className="max-w-lg space-y-10">
+          {/* Logo Section */}
+          <div className="space-y-6">
+            <div className="inline-flex items-center gap-3 px-4 py-2 rounded-full bg-primary/10 dark:bg-primary/20 border border-primary/20">
+              <div className="flex size-10 items-center justify-center rounded-xl bg-primary text-primary-foreground">
+                <FileText className="size-5" />
               </div>
-              <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                BroRaise
+              <span className="text-xl font-bold text-foreground">BroRaise</span>
+            </div>
+            
+            <div className="space-y-3">
+              <h1 className="text-5xl font-extrabold tracking-tight text-foreground">
+                Welcome Back
               </h1>
+              <p className="text-xl text-muted-foreground leading-relaxed">
+                Sign in to continue managing your complaints efficiently
+              </p>
             </div>
-            <h2 className="text-3xl font-bold text-foreground">
-              Welcome Back!
-            </h2>
-            <p className="text-lg text-muted-foreground">
-              Streamline your complaint management with our comprehensive platform.
-            </p>
           </div>
-          <div className="space-y-4 pt-8">
-            <div className="flex items-start gap-4 p-4 rounded-lg bg-white/50 dark:bg-white/5 backdrop-blur-sm border border-blue-200/50 dark:border-blue-800/50">
-              <CheckCircle2 className="size-6 text-blue-600 dark:text-blue-400 shrink-0 mt-0.5" />
-              <div>
-                <h3 className="font-semibold text-foreground">Easy Access</h3>
-                <p className="text-sm text-muted-foreground">Quick and secure login to your account</p>
+
+          {/* Feature Cards Grid */}
+          <div className="grid grid-cols-1 gap-4">
+            <div className="group relative p-6 rounded-2xl border-2 border-border bg-card hover:border-primary/50 transition-all duration-300 hover:shadow-lg">
+              <div className="flex items-start gap-4">
+                <div className="flex size-12 items-center justify-center rounded-xl bg-primary/10 dark:bg-primary/20 group-hover:bg-primary/20 transition-colors">
+                  <CheckCircle2 className="size-6 text-primary" />
+                </div>
+                <div className="flex-1 space-y-1">
+                  <h3 className="text-lg font-semibold text-foreground">Secure Access</h3>
+                  <p className="text-sm text-muted-foreground">Your data is protected with industry-standard encryption</p>
+                </div>
               </div>
             </div>
-            <div className="flex items-start gap-4 p-4 rounded-lg bg-white/50 dark:bg-white/5 backdrop-blur-sm border border-indigo-200/50 dark:border-indigo-800/50">
-              <MessageSquare className="size-6 text-indigo-600 dark:text-indigo-400 shrink-0 mt-0.5" />
-              <div>
-                <h3 className="font-semibold text-foreground">Real-time Updates</h3>
-                <p className="text-sm text-muted-foreground">Stay informed about your complaints</p>
+
+            <div className="group relative p-6 rounded-2xl border-2 border-border bg-card hover:border-primary/50 transition-all duration-300 hover:shadow-lg">
+              <div className="flex items-start gap-4">
+                <div className="flex size-12 items-center justify-center rounded-xl bg-primary/10 dark:bg-primary/20 group-hover:bg-primary/20 transition-colors">
+                  <MessageSquare className="size-6 text-primary" />
+                </div>
+                <div className="flex-1 space-y-1">
+                  <h3 className="text-lg font-semibold text-foreground">Real-time Updates</h3>
+                  <p className="text-sm text-muted-foreground">Get instant notifications about your complaint status</p>
+                </div>
               </div>
             </div>
-            <div className="flex items-start gap-4 p-4 rounded-lg bg-white/50 dark:bg-white/5 backdrop-blur-sm border border-purple-200/50 dark:border-purple-800/50">
-              <TrendingUp className="size-6 text-purple-600 dark:text-purple-400 shrink-0 mt-0.5" />
-              <div>
-                <h3 className="font-semibold text-foreground">Track Progress</h3>
-                <p className="text-sm text-muted-foreground">Monitor your complaint status easily</p>
+
+            <div className="group relative p-6 rounded-2xl border-2 border-border bg-card hover:border-primary/50 transition-all duration-300 hover:shadow-lg">
+              <div className="flex items-start gap-4">
+                <div className="flex size-12 items-center justify-center rounded-xl bg-primary/10 dark:bg-primary/20 group-hover:bg-primary/20 transition-colors">
+                  <TrendingUp className="size-6 text-primary" />
+                </div>
+                <div className="flex-1 space-y-1">
+                  <h3 className="text-lg font-semibold text-foreground">Track Progress</h3>
+                  <p className="text-sm text-muted-foreground">Monitor and manage all your complaints in one place</p>
+                </div>
               </div>
             </div>
           </div>
@@ -143,63 +165,69 @@ export default function LoginPage() {
       </div>
 
       {/* Right Side - Login Form */}
-      <div className="flex-1 flex items-center justify-center p-4 lg:p-8">
-        <Card className="w-full max-w-md border-2 box-border shadow-2xl backdrop-blur-sm bg-background/95">
-          <CardHeader className="space-y-1 text-center">
-            <div className="mx-auto flex size-16 items-center justify-center rounded-full bg-gradient-to-br from-blue-500 to-purple-600 text-white mb-4 shadow-lg transform hover:scale-110 transition-transform duration-300">
-              <FileText className="size-8" />
+      <div className="flex-1 flex items-center justify-center p-12 relative z-10">
+        <div className="w-full max-w-md">
+        <Card className="w-full border-2 box-border shadow-lg-card bg-card animate-fade-in">
+          <CardHeader className="space-y-1 text-center pb-6">
+            <div className="mx-auto flex size-20 items-center justify-center rounded-2xl bg-gradient-to-br from-primary via-primary/90 to-primary/80 text-primary-foreground mb-6 shadow-xl shadow-primary/25 transform hover:scale-105 transition-all duration-300">
+              <FileText className="size-10" />
             </div>
-            <CardTitle className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-              Login
+            <CardTitle className="text-3xl font-bold bg-gradient-to-r from-primary via-primary/90 to-primary/80 bg-clip-text text-transparent">
+              Welcome Back
             </CardTitle>
-            <CardDescription className="text-base mt-2">
-              Sign in to your account (Student or Staff)
+            <CardDescription className="text-base mt-3 text-muted-foreground">
+              Sign in to your account to continue
             </CardDescription>
           </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
+        <CardContent className="space-y-6">
+          <form onSubmit={handleSubmit} className="space-y-5">
             <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="email" className="text-sm font-semibold">Email Address</Label>
               <div className="relative">
-                <Mail className="absolute left-3 top-3 size-4 text-muted-foreground" />
+                <Mail className="absolute left-4 top-1/2 -translate-y-1/2 size-5 text-muted-foreground" />
                 <Input
                   id="email"
                   type="email"
                   placeholder="Enter your email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="pl-10"
+                  className="pl-12 h-12 rounded-lg border-2 focus:border-primary transition-colors"
                   required
                 />
               </div>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
+              <Label htmlFor="password" className="text-sm font-semibold">Password</Label>
               <div className="relative">
-                <Lock className="absolute left-3 top-3 size-4 text-muted-foreground" />
+                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 size-5 text-muted-foreground" />
                 <Input
                   id="password"
                   type="password"
                   placeholder="Enter your password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="pl-10"
+                  className="pl-12 h-12 rounded-lg border-2 focus:border-primary transition-colors"
                   required
                 />
               </div>
             </div>
-            <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? 'Signing in...' : 'Sign in'}
+            <Button 
+              type="submit" 
+              className="w-full h-12 rounded-lg text-base font-semibold shadow-lg hover:shadow-xl transition-all duration-200 bg-gradient-to-r from-primary to-primary/90" 
+              disabled={loading}
+            >
+              {loading ? 'Signing in...' : 'Sign In'}
             </Button>
           </form>
-          <div className="mt-6 text-center text-sm">
+          <div className="pt-4 border-t text-center text-sm">
             <span className="text-muted-foreground">Don't have an account? </span>
-            <Link href="/register" className="text-primary hover:underline font-medium">
+            <Link href="/register" className="text-primary hover:underline font-semibold transition-colors">
               Sign up here
             </Link>
           </div>
         </CardContent>
       </Card>
+        </div>
       </div>
       </div>
     </div>

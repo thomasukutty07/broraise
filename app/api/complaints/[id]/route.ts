@@ -47,6 +47,9 @@ const updateComplaintSchema = z.object({
   status: z.enum(['open', 'in-progress', 'resolved', 'closed']).optional(),
   assignedTo: z.string().optional(),
   resolution: z.string().optional(),
+  priority: z.enum(['low', 'medium', 'high', 'urgent']).optional(),
+  dueDate: z.string().optional(),
+  tags: z.array(z.string()).optional(),
 });
 
 async function updateHandler(req: AuthenticatedRequest, context?: { params?: Promise<{ id: string }> | { id: string } }) {
@@ -92,6 +95,24 @@ async function updateHandler(req: AuthenticatedRequest, context?: { params?: Pro
         return NextResponse.json({ error: 'Students cannot set resolution' }, { status: 403 });
       }
       complaint.resolution = validatedData.resolution;
+    }
+
+    if (validatedData.priority) {
+      if (req.user!.role === 'student') {
+        return NextResponse.json({ error: 'Students cannot set priority' }, { status: 403 });
+      }
+      complaint.priority = validatedData.priority;
+    }
+
+    if (validatedData.dueDate !== undefined) {
+      if (req.user!.role === 'student') {
+        return NextResponse.json({ error: 'Students cannot set due dates' }, { status: 403 });
+      }
+      complaint.dueDate = validatedData.dueDate ? new Date(validatedData.dueDate) : undefined;
+    }
+
+    if (validatedData.tags !== undefined) {
+      complaint.tags = validatedData.tags;
     }
 
     await complaint.save();

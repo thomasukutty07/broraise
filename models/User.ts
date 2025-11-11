@@ -12,6 +12,13 @@ export interface IUser extends Document {
   updatedAt: Date;
   googleId?: string;
   avatar?: string;
+  emailNotifications?: {
+    newComplaint?: boolean;
+    statusUpdate?: boolean;
+    comment?: boolean;
+    assignment?: boolean;
+    reminder?: boolean;
+  };
 }
 
 const UserSchema: Schema = new Schema(
@@ -52,6 +59,28 @@ const UserSchema: Schema = new Schema(
     },
     avatar: {
       type: String,
+    },
+    emailNotifications: {
+      newComplaint: {
+        type: Boolean,
+        default: true,
+      },
+      statusUpdate: {
+        type: Boolean,
+        default: true,
+      },
+      comment: {
+        type: Boolean,
+        default: true,
+      },
+      assignment: {
+        type: Boolean,
+        default: true,
+      },
+      reminder: {
+        type: Boolean,
+        default: true,
+      },
     },
   },
   {

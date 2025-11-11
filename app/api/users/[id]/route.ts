@@ -43,6 +43,14 @@ const updateUserSchema = z.object({
   role: z.enum(['student', 'staff', 'admin', 'management']).optional(),
   branch: z.string().optional(),
   isActive: z.boolean().optional(),
+  avatar: z.string().url().optional(),
+  emailNotifications: z.object({
+    newComplaint: z.boolean().optional(),
+    statusUpdate: z.boolean().optional(),
+    comment: z.boolean().optional(),
+    assignment: z.boolean().optional(),
+    reminder: z.boolean().optional(),
+  }).optional(),
 });
 
 async function updateHandler(req: AuthenticatedRequest, context?: { params?: Promise<{ id: string }> | { id: string } }) {

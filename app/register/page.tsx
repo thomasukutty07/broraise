@@ -66,7 +66,7 @@ export default function RegisterPage() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-linear-to-br from-emerald-50 via-teal-50 to-cyan-50 dark:from-emerald-950/20 dark:via-teal-950/20 dark:to-cyan-950/20 w-full overflow-x-hidden box-border">
+    <div className="min-h-screen flex flex-col bg-background w-full overflow-x-hidden box-border">
       {/* Header */}
       <nav className="border-b bg-background/95 backdrop-blur sticky top-0 z-50 w-full overflow-hidden">
         <div className="container mx-auto flex h-14 sm:h-16 items-center justify-between px-3 sm:px-4 lg:px-6 max-w-7xl w-full box-border">
@@ -120,51 +120,72 @@ export default function RegisterPage() {
         </div>
       </nav>
 
-      <div className="flex-1 flex">
-      {/* Left Side - Creative Elements */}
-      <div className="hidden lg:flex lg:w-1/2 items-center justify-center p-8 relative overflow-hidden">
-        <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <div className="absolute top-10 left-10 size-80 bg-emerald-300/20 dark:bg-emerald-500/10 rounded-full blur-3xl animate-pulse"></div>
-          <div className="absolute bottom-10 right-10 size-96 bg-teal-300/20 dark:bg-teal-500/10 rounded-full blur-3xl animate-pulse delay-1000"></div>
-          <div className="absolute top-1/2 right-1/4 size-72 bg-cyan-300/20 dark:bg-cyan-500/10 rounded-full blur-3xl animate-pulse delay-2000"></div>
+      <div className="flex-1 flex relative overflow-hidden">
+        {/* Geometric Pattern Background - Applied to parent */}
+        <div className="absolute inset-0 opacity-[0.03] dark:opacity-[0.05] pointer-events-none">
+          <div className="absolute inset-0" style={{
+            backgroundImage: `repeating-linear-gradient(45deg, transparent, transparent 35px, currentColor 35px, currentColor 70px)`,
+          }}></div>
         </div>
-        <div className="relative z-10 max-w-md space-y-8">
-          <div className="space-y-4">
-            <div className="flex items-center gap-3">
-              <div className="flex size-14 items-center justify-center rounded-2xl bg-linear-to-br from-emerald-500 via-teal-500 to-cyan-500 text-white shadow-xl">
-                <UserPlus className="size-8" />
+        
+      {/* Left Side - Modern Design */}
+      <div className="hidden lg:flex lg:w-1/2 items-center justify-center p-12 relative z-10">
+        {/* Content */}
+        <div className="max-w-lg space-y-10">
+          {/* Logo Section */}
+          <div className="space-y-6">
+            <div className="inline-flex items-center gap-3 px-4 py-2 rounded-full bg-primary/10 dark:bg-primary/20 border border-primary/20">
+              <div className="flex size-10 items-center justify-center rounded-xl bg-primary text-primary-foreground">
+                <UserPlus className="size-5" />
               </div>
-              <h1 className="text-4xl font-bold bg-linear-to-r from-emerald-600 via-teal-600 to-cyan-600 bg-clip-text text-transparent">
+              <span className="text-xl font-bold text-foreground">BroRaise</span>
+            </div>
+            
+            <div className="space-y-3">
+              <h1 className="text-5xl font-extrabold tracking-tight text-foreground">
                 Get Started
               </h1>
+              <p className="text-xl text-muted-foreground leading-relaxed">
+                Create your account and start managing complaints efficiently
+              </p>
             </div>
-            <h2 className="text-3xl font-bold text-foreground">
-              Join BroRaise Today
-            </h2>
-            <p className="text-lg text-muted-foreground">
-              Create your account and start managing complaints efficiently.
-            </p>
           </div>
-          <div className="space-y-4 pt-8">
-            <div className="flex items-start gap-4 p-4 rounded-lg bg-white/50 dark:bg-white/5 backdrop-blur-sm border border-emerald-200/50 dark:border-emerald-800/50">
-              <Star className="size-6 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />
-              <div>
-                <h3 className="font-semibold text-foreground">Quick Registration</h3>
-                <p className="text-sm text-muted-foreground">Sign up in minutes with simple steps</p>
+
+          {/* Feature Cards Grid */}
+          <div className="grid grid-cols-1 gap-4">
+            <div className="group relative p-6 rounded-2xl border-2 border-border bg-card hover:border-primary/50 transition-all duration-300 hover:shadow-lg">
+              <div className="flex items-start gap-4">
+                <div className="flex size-12 items-center justify-center rounded-xl bg-primary/10 dark:bg-primary/20 group-hover:bg-primary/20 transition-colors">
+                  <Star className="size-6 text-primary" />
+                </div>
+                <div className="flex-1 space-y-1">
+                  <h3 className="text-lg font-semibold text-foreground">Quick Registration</h3>
+                  <p className="text-sm text-muted-foreground">Sign up in minutes with a simple registration process</p>
+                </div>
               </div>
             </div>
-            <div className="flex items-start gap-4 p-4 rounded-lg bg-white/50 dark:bg-white/5 backdrop-blur-sm border border-teal-200/50 dark:border-teal-800/50">
-              <Rocket className="size-6 text-teal-600 dark:text-teal-400 shrink-0 mt-0.5" />
-              <div>
-                <h3 className="font-semibold text-foreground">Start Immediately</h3>
-                <p className="text-sm text-muted-foreground">Begin submitting complaints right away</p>
+
+            <div className="group relative p-6 rounded-2xl border-2 border-border bg-card hover:border-primary/50 transition-all duration-300 hover:shadow-lg">
+              <div className="flex items-start gap-4">
+                <div className="flex size-12 items-center justify-center rounded-xl bg-primary/10 dark:bg-primary/20 group-hover:bg-primary/20 transition-colors">
+                  <Rocket className="size-6 text-primary" />
+                </div>
+                <div className="flex-1 space-y-1">
+                  <h3 className="text-lg font-semibold text-foreground">Start Immediately</h3>
+                  <p className="text-sm text-muted-foreground">Begin submitting and managing complaints right away</p>
+                </div>
               </div>
             </div>
-            <div className="flex items-start gap-4 p-4 rounded-lg bg-white/50 dark:bg-white/5 backdrop-blur-sm border border-cyan-200/50 dark:border-cyan-800/50">
-              <Shield className="size-6 text-cyan-600 dark:text-cyan-400 shrink-0 mt-0.5" />
-              <div>
-                <h3 className="font-semibold text-foreground">Secure & Safe</h3>
-                <p className="text-sm text-muted-foreground">Your data is protected with encryption</p>
+
+            <div className="group relative p-6 rounded-2xl border-2 border-border bg-card hover:border-primary/50 transition-all duration-300 hover:shadow-lg">
+              <div className="flex items-start gap-4">
+                <div className="flex size-12 items-center justify-center rounded-xl bg-primary/10 dark:bg-primary/20 group-hover:bg-primary/20 transition-colors">
+                  <Shield className="size-6 text-primary" />
+                </div>
+                <div className="flex-1 space-y-1">
+                  <h3 className="text-lg font-semibold text-foreground">Secure & Safe</h3>
+                  <p className="text-sm text-muted-foreground">Your data is protected with enterprise-grade encryption</p>
+                </div>
               </div>
             </div>
           </div>
@@ -172,64 +193,62 @@ export default function RegisterPage() {
       </div>
 
       {/* Right Side - Registration Form */}
-      <div className="flex-1 flex items-center justify-center p-4 lg:p-8">
-        <Card className="w-full max-w-2xl border-2 box-border shadow-2xl backdrop-blur-sm bg-background/95 border-emerald-200 dark:border-emerald-800">
-          <CardHeader className="space-y-1 text-center relative">
-            <div className="mx-auto flex size-16 items-center justify-center rounded-full bg-linear-to-br from-emerald-500 via-teal-500 to-cyan-500 text-white mb-4 shadow-lg transform hover:scale-110 transition-transform duration-300 relative">
-              <UserPlus className="size-8" />
-              <div className="absolute -top-1 -right-1">
-                <Sparkles className="size-5 text-yellow-400 animate-pulse" />
-              </div>
+      <div className="flex-1 flex items-center justify-center p-12 relative z-10">
+        <div className="w-full max-w-2xl">
+        <Card className="w-full border-2 box-border shadow-lg-card bg-card animate-fade-in">
+          <CardHeader className="space-y-1 text-center pb-6 relative">
+            <div className="mx-auto flex size-20 items-center justify-center rounded-2xl bg-gradient-to-br from-primary via-primary/90 to-primary/80 text-primary-foreground mb-6 shadow-xl shadow-primary/25 transform hover:scale-105 transition-all duration-300">
+              <UserPlus className="size-10" />
             </div>
-            <CardTitle className="text-3xl font-bold bg-linear-to-r from-emerald-600 via-teal-600 to-cyan-600 bg-clip-text text-transparent">
-              Create your account
+            <CardTitle className="text-3xl font-bold bg-gradient-to-r from-primary via-primary/90 to-primary/80 bg-clip-text text-transparent">
+              Create Your Account
             </CardTitle>
-            <CardDescription className="text-base mt-2">
-              Sign up for BroRaise
+            <CardDescription className="text-base mt-3 text-muted-foreground">
+              Join BroRaise and start managing complaints efficiently
             </CardDescription>
           </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <CardContent className="space-y-6">
+          <form onSubmit={handleSubmit} className="space-y-5">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
               <div className="space-y-2">
-                <Label htmlFor="name">Full Name</Label>
+                <Label htmlFor="name" className="text-sm font-semibold">Full Name</Label>
                 <div className="relative">
-                  <User className="absolute left-3 top-3 size-4 text-muted-foreground" />
+                  <User className="absolute left-4 top-1/2 -translate-y-1/2 size-5 text-muted-foreground" />
                   <Input
                     id="name"
                     type="text"
                     placeholder="Enter your full name"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
-                    className="pl-10"
+                    className="pl-12 h-12 rounded-lg border-2 focus:border-primary transition-colors"
                     required
                   />
                 </div>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
+                <Label htmlFor="email" className="text-sm font-semibold">Email Address</Label>
                 <div className="relative">
-                  <Mail className="absolute left-3 top-3 size-4 text-muted-foreground" />
+                  <Mail className="absolute left-4 top-1/2 -translate-y-1/2 size-5 text-muted-foreground" />
                   <Input
                     id="email"
                     type="email"
                     placeholder="Enter your email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="pl-10"
+                    className="pl-12 h-12 rounded-lg border-2 focus:border-primary transition-colors"
                     required
                   />
                 </div>
               </div>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
               <div className="space-y-2">
-                <Label htmlFor="role" className="flex items-center gap-2">
+                <Label htmlFor="role" className="text-sm font-semibold flex items-center gap-2">
                   <UserCircle className="size-4" />
                   Role
                 </Label>
                 <Select value={role} onValueChange={(value) => setRole(value as 'student' | 'staff')}>
-                  <SelectTrigger>
+                  <SelectTrigger className="h-12 rounded-lg border-2">
                     <div className="flex items-center gap-2">
                       {role === 'student' ? (
                         <GraduationCap className="size-4 text-muted-foreground" />
@@ -246,59 +265,63 @@ export default function RegisterPage() {
                 </Select>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="branch">Branch (Optional)</Label>
+                <Label htmlFor="branch" className="text-sm font-semibold">Branch (Optional)</Label>
                 <div className="relative">
-                  <Building className="absolute left-3 top-3 size-4 text-muted-foreground" />
+                  <Building className="absolute left-4 top-1/2 -translate-y-1/2 size-5 text-muted-foreground" />
                   <Input
                     id="branch"
                     type="text"
                     placeholder="Enter branch name"
                     value={branch}
                     onChange={(e) => setBranch(e.target.value)}
-                    className="pl-10"
+                    className="pl-12 h-12 rounded-lg border-2 focus:border-primary transition-colors"
                   />
                 </div>
               </div>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
               <div className="space-y-2">
-                <Label htmlFor="password" className="flex items-center gap-2">
+                <Label htmlFor="password" className="text-sm font-semibold flex items-center gap-2">
                   <KeyRound className="size-4" />
                   Password
                 </Label>
                 <div className="relative">
-                  <Lock className="absolute left-3 top-3 size-4 text-muted-foreground" />
+                  <Lock className="absolute left-4 top-1/2 -translate-y-1/2 size-5 text-muted-foreground" />
                   <Input
                     id="password"
                     type="password"
                     placeholder="Enter password (min 6 characters)"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className="pl-10"
+                    className="pl-12 h-12 rounded-lg border-2 focus:border-primary transition-colors"
                     required
                   />
                 </div>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="confirmPassword" className="flex items-center gap-2">
+                <Label htmlFor="confirmPassword" className="text-sm font-semibold flex items-center gap-2">
                   <KeyRound className="size-4" />
                   Confirm Password
                 </Label>
                 <div className="relative">
-                  <Lock className="absolute left-3 top-3 size-4 text-muted-foreground" />
+                  <Lock className="absolute left-4 top-1/2 -translate-y-1/2 size-5 text-muted-foreground" />
                   <Input
                     id="confirmPassword"
                     type="password"
                     placeholder="Confirm your password"
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
-                    className="pl-10"
+                    className="pl-12 h-12 rounded-lg border-2 focus:border-primary transition-colors"
                     required
                   />
                 </div>
               </div>
             </div>
-            <Button type="submit" className="w-full" disabled={loading}>
+            <Button 
+              type="submit" 
+              className="w-full h-12 rounded-lg text-base font-semibold shadow-lg hover:shadow-xl transition-all duration-200 bg-gradient-to-r from-primary to-primary/90" 
+              disabled={loading}
+            >
               {loading ? (
                 <>
                   <Sparkles className="mr-2 size-4 animate-spin" />
@@ -307,20 +330,21 @@ export default function RegisterPage() {
               ) : (
                 <>
                   <UserPlus className="mr-2 size-4" />
-                  Sign up
+                  Create Account
                 </>
               )}
             </Button>
           </form>
-          <div className="mt-6 text-center text-sm">
+          <div className="pt-4 border-t text-center text-sm">
             <span className="text-muted-foreground">Already have an account? </span>
-            <Link href="/login" className="text-primary hover:underline font-medium inline-flex items-center gap-1">
+            <Link href="/login" className="text-primary hover:underline font-semibold inline-flex items-center gap-1 transition-colors">
               <LogIn className="size-4" />
               Sign in here
             </Link>
           </div>
         </CardContent>
       </Card>
+        </div>
       </div>
       </div>
     </div>

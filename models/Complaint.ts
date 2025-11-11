@@ -6,10 +6,13 @@ export interface IComplaint extends Document {
   description: string;
   category: mongoose.Types.ObjectId;
   urgency: 'low' | 'medium' | 'high' | 'critical';
+  priority?: 'low' | 'medium' | 'high' | 'urgent';
   status: 'open' | 'in-progress' | 'resolved' | 'closed';
   submittedBy: mongoose.Types.ObjectId;
   assignedTo?: mongoose.Types.ObjectId;
   attachments?: string[];
+  tags?: string[];
+  dueDate?: Date;
   resolution?: string;
   resolvedAt?: Date;
   createdAt: Date;
@@ -37,10 +40,22 @@ const ComplaintSchema: Schema = new Schema(
       enum: ['low', 'medium', 'high', 'critical'],
       default: 'medium',
     },
+    priority: {
+      type: String,
+      enum: ['low', 'medium', 'high', 'urgent'],
+      default: 'medium',
+    },
     status: {
       type: String,
       enum: ['open', 'in-progress', 'resolved', 'closed'],
       default: 'open',
+    },
+    tags: [{
+      type: String,
+      trim: true,
+    }],
+    dueDate: {
+      type: Date,
     },
     submittedBy: {
       type: Schema.Types.ObjectId,
@@ -71,6 +86,9 @@ const ComplaintSchema: Schema = new Schema(
 ComplaintSchema.index({ submittedBy: 1, createdAt: -1 });
 ComplaintSchema.index({ assignedTo: 1, status: 1 });
 ComplaintSchema.index({ status: 1, urgency: 1 });
+ComplaintSchema.index({ priority: 1, dueDate: 1 });
+ComplaintSchema.index({ tags: 1 });
+ComplaintSchema.index({ dueDate: 1 });
 
 export default (mongoose.models.Complaint as Model<IComplaint>) || mongoose.model<IComplaint>('Complaint', ComplaintSchema);
 
