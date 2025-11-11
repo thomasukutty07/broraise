@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import connectDB from '@/lib/db';
-import Complaint from '@/models/Complaint';
+import Complaint, { IComplaint } from '@/models/Complaint';
 import { requireAuth, AuthenticatedRequest } from '@/lib/middleware';
 import { z } from 'zod';
 
@@ -17,7 +17,7 @@ async function postHandler(req: AuthenticatedRequest) {
     const { title, description, submittedBy } = findDuplicatesSchema.parse(body);
 
     // Find similar complaints based on title similarity
-    const allComplaints = await Complaint.find({
+    const allComplaints: IComplaint[] = await Complaint.find({
       submittedBy: submittedBy || { $exists: true },
     })
       .populate('submittedBy', 'name email')
@@ -28,7 +28,7 @@ async function postHandler(req: AuthenticatedRequest) {
     // Simple similarity check - find complaints with similar titles
     const titleWords = title.toLowerCase().split(/\s+/);
     const duplicates = allComplaints
-      .map((complaint) => {
+      .map((complaint: IComplaint) => {
         const complaintTitle = complaint.title.toLowerCase();
         const matchingWords = titleWords.filter((word) => complaintTitle.includes(word));
         const similarity = matchingWords.length / Math.max(titleWords.length, complaintTitle.split(/\s+/).length);

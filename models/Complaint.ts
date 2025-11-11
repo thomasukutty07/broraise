@@ -1,6 +1,7 @@
 import mongoose, { Schema, Document, Model } from 'mongoose';
 
 export interface IComplaint extends Document {
+  _id: mongoose.Types.ObjectId;
   title: string;
   description: string;
   category: mongoose.Types.ObjectId;
