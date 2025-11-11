@@ -98,6 +98,10 @@ async function createHandler(req: AuthenticatedRequest) {
       .populate('submittedBy', 'name email')
       .populate('assignedTo', 'name email');
 
+    if (!populatedComplaint) {
+      return NextResponse.json({ error: 'Failed to retrieve created complaint' }, { status: 500 });
+    }
+
     // Emit Socket.io event for new complaint IMMEDIATELY (notify admins and management)
     // This happens before the response is sent to ensure real-time delivery
     

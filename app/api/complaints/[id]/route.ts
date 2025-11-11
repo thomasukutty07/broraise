@@ -10,6 +10,7 @@ import User from '@/models/User';
 import { emitToUser, emitToRole } from '@/lib/socket-helper';
 import mongoose from 'mongoose';
 
+
 async function getHandler(req: AuthenticatedRequest, context?: { params?: Promise<{ id: string }> | { id: string } }) {
   try {
     await connectDB();
