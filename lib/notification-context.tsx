@@ -178,7 +178,8 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
 
     // Sync with database if this is a database notification (MongoDB ObjectId format: 24 hex chars)
     if (typeof window !== 'undefined' && /^[0-9a-fA-F]{24}$/.test(id)) {
-      let response: Response | null = null;
+      type ApiResponse = { status: number; statusText: string; json: () => Promise<any> };
+      let response: ApiResponse | null = null;
       try {
         console.log('📤 Marking notification as read:', id);
         
