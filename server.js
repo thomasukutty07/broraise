@@ -101,7 +101,7 @@ app.prepare().then(() => {
     try {
       console.log('🔄 Attempting to start reminder checker...');
       // Dynamic import for ES modules
-      const reminderChecker = await import('./lib/reminder-checker.js');
+      const reminderChecker = await import('./lib/reminder-checker.ts');
       console.log('📦 Reminder checker module loaded:', Object.keys(reminderChecker));
       if (reminderChecker.startReminderChecker) {
         console.log('✅ Calling startReminderChecker...');

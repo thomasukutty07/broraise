@@ -3,10 +3,10 @@
   "version": "2.0.0",
   "private": true,
   "scripts": {
-    "dev": "node server.js",
+    "dev": "tsx server.js",
     "dev:next": "next dev",
     "build": "next build",
-    "start": "node server.js",
+    "start": "tsx server.js",
     "lint": "eslint",
     "create-admin": "tsx scripts/create-admin.ts"
   },
