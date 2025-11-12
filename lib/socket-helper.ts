@@ -42,7 +42,11 @@ export function emitToUser(userId: string, event: string, data: any) {
   
   if (clientCount === 0) {
     console.warn(`⚠️ WARNING: No clients in room ${room} for user ${userIdStr}! Event will not be delivered.`);
-    console.log(`📤 Available rooms:`, Array.from(io.sockets.adapter.rooms.keys()).filter(r => r.startsWith('user:')).slice(0, 10));
+    const rooms = Array.from(io.sockets.adapter.rooms.keys() as Iterable<string>);
+    const userRooms = rooms
+      .filter((r) => r.startsWith('user:'))
+      .slice(0, 10);
+    console.log(`📤 Available rooms:`, userRooms);
   }
   
   io.to(room).emit(event, data);
