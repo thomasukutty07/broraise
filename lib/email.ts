@@ -1,7 +1,48 @@
 import sgMail from '@sendgrid/mail';
+import User from '@/models/User';
 
 if (process.env.SENDGRID_API_KEY) {
   sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+}
+
+/**
+ * Check if user has email notifications enabled for a specific type
+ */
+export async function shouldSendEmail(
+  userId: string,
+  notificationType: 'newComplaint' | 'statusUpdate' | 'comment' | 'assignment' | 'reminder'
+): Promise<boolean> {
+  try {
+    const user = await User.findById(userId).select('emailNotifications');
+    if (!user) {
+      return false;
+    }
+
+    // Default to true if emailNotifications is not set (backward compatibility)
+    if (!user.emailNotifications) {
+      return true;
+    }
+
+    const prefs = user.emailNotifications;
+    switch (notificationType) {
+      case 'newComplaint':
+        return prefs.newComplaint ?? true;
+      case 'statusUpdate':
+        return prefs.statusUpdate ?? true;
+      case 'comment':
+        return prefs.comment ?? true;
+      case 'assignment':
+        return prefs.assignment ?? true;
+      case 'reminder':
+        return prefs.reminder ?? true;
+      default:
+        return true;
+    }
+  } catch (error) {
+    console.error('Error checking email preferences:', error);
+    // Default to true on error to ensure notifications are sent
+    return true;
+  }
 }
 
 export async function sendEmail(
@@ -11,6 +52,12 @@ export async function sendEmail(
   text?: string
 ): Promise<void> {
   if (!process.env.SENDGRID_API_KEY) {
+    console.warn('⚠️ SENDGRID_API_KEY not set - email notifications disabled');
+    return;
+  }
+
+  if (!to || !to.trim()) {
+    console.warn('⚠️ Cannot send email - no recipient address');
     return;
   }
 
@@ -22,10 +69,57 @@ export async function sendEmail(
       text: text || subject,
       html,
     });
-  } catch (error) {
-    console.error('SendGrid error:', error);
-    throw error;
+    console.log(`✅ Email sent successfully to ${to}`);
+  } catch (error: any) {
+    console.error('❌ SendGrid error:', error);
+    // Don't throw - email failures shouldn't break the main flow
+    if (error.response) {
+      console.error('SendGrid response:', error.response.body);
+    }
   }
+}
+
+/**
+ * Send email with preference check
+ */
+export async function sendEmailIfEnabled(
+  userId: string,
+  notificationType: 'newComplaint' | 'statusUpdate' | 'comment' | 'assignment' | 'reminder',
+  to: string,
+  subject: string,
+  html: string,
+  text?: string
+): Promise<void> {
+  const enabled = await shouldSendEmail(userId, notificationType);
+  if (!enabled) {
+    console.log(`📧 Email notification skipped for user ${userId} - ${notificationType} disabled`);
+    return;
+  }
+
+  await sendEmail(to, subject, html, text);
+}
+
+export function getReminderEmailTemplate(
+  complaintTitle: string,
+  complaintId: string,
+  reminderMessage: string
+): { subject: string; html: string } {
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+  const complaintUrl = `${baseUrl}/complaints/${complaintId}`;
+
+  return {
+    subject: `Reminder: ${complaintTitle}`,
+    html: `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+        <h2>Reminder: Action Required</h2>
+        <p>This is a reminder for the complaint "<strong>${complaintTitle}</strong>".</p>
+        <p><strong>Reminder:</strong> ${reminderMessage}</p>
+        <p>Complaint ID: <strong>${complaintId}</strong></p>
+        <p>Please take the necessary action on this complaint.</p>
+        <a href="${complaintUrl}" style="display: inline-block; padding: 10px 20px; background-color: #ff9800; color: white; text-decoration: none; border-radius: 5px; margin-top: 20px;">View Complaint</a>
+      </div>
+    `,
+  };
 }
 
 export function getComplaintEmailTemplate(

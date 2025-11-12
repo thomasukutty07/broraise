@@ -5,7 +5,6 @@ import ProtectedRoute from '@/components/ProtectedRoute';
 import Layout from '@/components/Layout';
 import { useAuth } from '@/lib/auth-context';
 import { apiRequest } from '@/lib/api';
-import { useNotifications } from '@/lib/use-notifications';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -21,8 +20,7 @@ export default function DashboardPage() {
   const [upcomingReminders, setUpcomingReminders] = useState<any[]>([]);
   const [loadingReminders, setLoadingReminders] = useState(false);
 
-  // Enable notifications for admin and staff
-  useNotifications();
+  // Notifications are handled by Layout component
 
   useEffect(() => {
     fetchDashboardData();

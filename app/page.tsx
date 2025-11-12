@@ -3,6 +3,7 @@
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/auth-context';
+import PageLoader from '@/components/PageLoader';
 
 export default function Home() {
   const { user, loading } = useAuth();
@@ -18,9 +19,5 @@ export default function Home() {
     }
   }, [user, loading, router]);
 
-  return (
-    <div className="flex min-h-screen items-center justify-center">
-      <div className="text-lg">Redirecting...</div>
-    </div>
-  );
+  return <PageLoader message="Redirecting..." />;
 }

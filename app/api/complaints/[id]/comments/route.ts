@@ -4,7 +4,7 @@ import Comment from '@/models/Comment';
 import Complaint from '@/models/Complaint';
 import { requireAuth, AuthenticatedRequest } from '@/lib/middleware';
 import { z } from 'zod';
-import { sendEmail, getComplaintEmailTemplate } from '@/lib/email';
+import { sendEmail, sendEmailIfEnabled, getComplaintEmailTemplate } from '@/lib/email';
 import User from '@/models/User';
 import { emitToUser, emitToRole } from '@/lib/socket-helper';
 import { saveNotificationToDB, saveNotificationToRole, saveNotificationToUsers } from '@/lib/notification-helper';
@@ -43,10 +43,28 @@ async function createHandler(req: AuthenticatedRequest, context?: { params?: Pro
       return NextResponse.json({ error: 'Students cannot create internal comments' }, { status: 403 });
     }
 
+    // Check for duplicate comments from the same user within the last 5 seconds
+    // This prevents accidental double-submission
+    const fiveSecondsAgo = new Date(Date.now() - 5 * 1000);
+    const duplicateComment = await Comment.findOne({
+      complaint: params.id,
+      author: req.user!.userId,
+      content: validatedData.content.trim(),
+      isInternal: validatedData.isInternal || false,
+      createdAt: { $gte: fiveSecondsAgo },
+    });
+
+    if (duplicateComment) {
+      console.log('⚠️ Duplicate comment detected, returning existing comment');
+      const existingComment = await Comment.findById(duplicateComment._id)
+        .populate('author', 'name email avatar role');
+      return NextResponse.json(existingComment, { status: 200 });
+    }
+
     const comment = await Comment.create({
       complaint: params.id,
       author: req.user!.userId,
-      content: validatedData.content,
+      content: validatedData.content.trim(),
       isInternal: validatedData.isInternal || false,
     });
 
@@ -72,7 +90,13 @@ async function createHandler(req: AuthenticatedRequest, context?: { params?: Pro
           params.id,
           `New comment from ${commenterUser.name}`
         );
-        await sendEmail(submittedByUser.email, emailTemplate.subject, emailTemplate.html);
+        await sendEmailIfEnabled(
+          submittedByUser._id.toString(),
+          'comment',
+          submittedByUser.email,
+          emailTemplate.subject,
+          emailTemplate.html
+        );
       }
 
       if (complaint.assignedTo && complaint.assignedTo.toString() !== req.user!.userId) {
@@ -84,7 +108,13 @@ async function createHandler(req: AuthenticatedRequest, context?: { params?: Pro
             params.id,
             `New comment from ${commenterUser.name}`
           );
-          await sendEmail(assignedUser.email, emailTemplate.subject, emailTemplate.html);
+          await sendEmailIfEnabled(
+            assignedUser._id.toString(),
+            'comment',
+            assignedUser.email,
+            emailTemplate.subject,
+            emailTemplate.html
+          );
           
           // Emit Socket.io event for new comment (only if assigned user is a student)
           // Staff don't receive comment notifications
@@ -122,6 +152,7 @@ async function createHandler(req: AuthenticatedRequest, context?: { params?: Pro
           title: complaint.title,
           message: validatedData.content,
           commenterName: commenterUser.name,
+          commenterId: commenterUser._id.toString(), // Include commenterId for filtering
         };
         
         // Emit real-time notification
@@ -136,7 +167,6 @@ async function createHandler(req: AuthenticatedRequest, context?: { params?: Pro
       // BUT: Don't notify the commenter about their own comment
       // Only notify other admins (not the one who made the comment)
       // We'll emit to all admins, but the client-side handler will filter out the commenter
-      emitToRole('admin', 'new_comment', commentNotificationData);
       
       // Save notifications to database for all admins (excluding the commenter)
       // Filter out the commenter on the server side to avoid storing unnecessary notifications
@@ -147,12 +177,35 @@ async function createHandler(req: AuthenticatedRequest, context?: { params?: Pro
           .map((admin) => admin._id.toString());
         
         if (adminIds.length > 0) {
+          // Emit to each admin individually to ensure they receive the notification
+          // This ensures reliable delivery compared to emitToRole
+          adminIds.forEach((adminId) => {
+            emitToUser(adminId, 'new_comment', {
+              ...commentNotificationData,
+              commenterId: commenterUser._id.toString(), // Ensure commenterId is included
+            });
+          });
           await saveNotificationToUsers(adminIds, commentNotificationData);
         }
       } else {
         // If commenter is not an admin, notify all admins
+        // Emit to role AND save to database
+        // Ensure commenterId is included in the notification data
+        const adminNotificationData = {
+          ...commentNotificationData,
+          commenterId: commenterUser._id.toString(),
+        };
+        emitToRole('admin', 'new_comment', adminNotificationData);
         await saveNotificationToRole('admin', commentNotificationData);
       }
+      
+      // Also notify management role if they exist
+      const managementNotificationData = {
+        ...commentNotificationData,
+        commenterId: commenterUser._id.toString(),
+      };
+      emitToRole('management', 'new_comment', managementNotificationData);
+      await saveNotificationToRole('management', managementNotificationData);
     }
 
     return NextResponse.json(populatedComment, { status: 201 });

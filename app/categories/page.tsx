@@ -8,7 +8,6 @@ import { apiRequest } from '@/lib/api';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -38,7 +37,6 @@ export default function CategoriesPage() {
   const [editingCategory, setEditingCategory] = useState<any>(null);
   const [formData, setFormData] = useState({
     name: '',
-    description: '',
   });
 
   useEffect(() => {
@@ -76,7 +74,7 @@ export default function CategoriesPage() {
       }
       setShowModal(false);
       setEditingCategory(null);
-      setFormData({ name: '', description: '' });
+      setFormData({ name: '' });
       fetchCategories();
     } catch (error: any) {
       toast.error(error.message || 'Failed to save category');
@@ -110,7 +108,7 @@ export default function CategoriesPage() {
               className="w-full sm:w-auto"
               onClick={() => {
                 setEditingCategory(null);
-                setFormData({ name: '', description: '' });
+                setFormData({ name: '' });
                 setShowModal(true);
               }}
             >
@@ -141,7 +139,6 @@ export default function CategoriesPage() {
                     <TableHeader>
                       <TableRow>
                         <TableHead className="px-6">Name</TableHead>
-                        <TableHead className="px-6">Description</TableHead>
                         <TableHead className="px-6">Status</TableHead>
                         <TableHead className="text-right px-6">Actions</TableHead>
                       </TableRow>
@@ -149,7 +146,7 @@ export default function CategoriesPage() {
                     <TableBody>
                       {categories.length === 0 ? (
                         <TableRow>
-                          <TableCell colSpan={4} className="text-center py-8 text-muted-foreground">
+                          <TableCell colSpan={3} className="text-center py-8 text-muted-foreground">
                             No categories found. Create your first category.
                           </TableCell>
                         </TableRow>
@@ -157,7 +154,6 @@ export default function CategoriesPage() {
                         categories.map((cat) => (
                           <TableRow key={cat._id}>
                             <TableCell className="px-6 font-medium">{cat.name}</TableCell>
-                            <TableCell className="px-6">{cat.description || '-'}</TableCell>
                             <TableCell className="px-6">
                               <Badge variant={cat.isActive ? 'default' : 'secondary'}>
                                 {cat.isActive ? 'Active' : 'Inactive'}
@@ -170,7 +166,7 @@ export default function CategoriesPage() {
                                   size="icon"
                                   onClick={() => {
                                     setEditingCategory(cat);
-                                    setFormData({ name: cat.name, description: cat.description || '' });
+                                    setFormData({ name: cat.name });
                                     setShowModal(true);
                                   }}
                                 >
@@ -211,15 +207,6 @@ export default function CategoriesPage() {
                     value={formData.name}
                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                     required
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="description">Description</Label>
-                  <Textarea
-                    id="description"
-                    value={formData.description}
-                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                    rows={3}
                   />
                 </div>
                 <div className="flex justify-end gap-3">

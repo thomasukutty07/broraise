@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import connectDB from '@/lib/db';
 import Notification from '@/models/Notification';
 import { requireAuth, AuthenticatedRequest } from '@/lib/middleware';
+import mongoose from 'mongoose';
 
 async function getHandler(req: AuthenticatedRequest) {
   try {
@@ -12,7 +13,7 @@ async function getHandler(req: AuthenticatedRequest) {
     const limit = parseInt(searchParams.get('limit') || '100');
 
     const filter: any = {
-      userId: req.user!.userId,
+      userId: new mongoose.Types.ObjectId(req.user!.userId),
     };
 
     if (unreadOnly) {
@@ -50,29 +51,100 @@ async function getHandler(req: AuthenticatedRequest) {
 async function putHandler(req: AuthenticatedRequest) {
   try {
     await connectDB();
+    
+    console.log('📥 PUT /api/notifications - Request received', {
+      userId: req.user?.userId,
+      userRole: req.user?.role,
+      method: req.method,
+      url: req.url,
+    });
 
-    const body = await req.json();
+    let body;
+    try {
+      body = await req.json();
+      console.log('📥 Request body:', body);
+    } catch (parseError: any) {
+      console.error('❌ Error parsing request body:', parseError);
+      return NextResponse.json({ 
+        error: 'Invalid request body',
+        details: parseError.message 
+      }, { status: 400 });
+    }
+
     const { notificationIds, markAllAsRead } = body;
+    
+    console.log('📥 Processing request:', {
+      notificationIds,
+      markAllAsRead,
+      notificationIdsType: Array.isArray(notificationIds) ? 'array' : typeof notificationIds,
+      notificationIdsLength: Array.isArray(notificationIds) ? notificationIds.length : 'N/A',
+    });
 
     if (markAllAsRead) {
       // Mark all unread notifications as read for this user
-      await Notification.updateMany(
-        { userId: req.user!.userId, read: false },
-        { read: true }
-      );
-      return NextResponse.json({ message: 'All notifications marked as read' });
-    }
-
-    if (notificationIds && Array.isArray(notificationIds)) {
-      // Mark specific notifications as read
-      await Notification.updateMany(
-        {
-          _id: { $in: notificationIds },
-          userId: req.user!.userId,
+      const result = await Notification.updateMany(
+        { 
+          userId: new mongoose.Types.ObjectId(req.user!.userId), 
+          read: false 
         },
         { read: true }
       );
-      return NextResponse.json({ message: 'Notifications marked as read' });
+      console.log(`✅ Marked ${result.modifiedCount} notifications as read`);
+      return NextResponse.json({ 
+        message: 'All notifications marked as read',
+        count: result.modifiedCount 
+      });
+    }
+
+    if (notificationIds && Array.isArray(notificationIds) && notificationIds.length > 0) {
+      // Convert notification IDs to ObjectIds
+      const objectIds = notificationIds
+        .filter((id: string) => mongoose.Types.ObjectId.isValid(id))
+        .map((id: string) => new mongoose.Types.ObjectId(id));
+      
+      if (objectIds.length === 0) {
+        console.error('❌ Invalid notification IDs provided:', notificationIds);
+        return NextResponse.json({ 
+          error: 'Invalid notification IDs',
+          provided: notificationIds 
+        }, { status: 400 });
+      }
+
+      const userId = new mongoose.Types.ObjectId(req.user!.userId);
+      
+      // Check if notifications exist and belong to the user
+      const existingNotifications = await Notification.find({
+        _id: { $in: objectIds },
+        userId: userId,
+      }).select('_id read');
+
+      if (existingNotifications.length === 0) {
+        console.warn(`⚠️ No notifications found for user ${userId} with IDs:`, objectIds);
+        return NextResponse.json({ 
+          error: 'Notifications not found or do not belong to user',
+          count: 0 
+        }, { status: 404 });
+      }
+
+      // Mark specific notifications as read
+      const result = await Notification.updateMany(
+        {
+          _id: { $in: objectIds },
+          userId: userId,
+        },
+        { read: true }
+      );
+      
+      console.log(`✅ Marked ${result.modifiedCount} notification(s) as read for user ${userId}`, {
+        requested: objectIds.length,
+        found: existingNotifications.length,
+        modified: result.modifiedCount,
+      });
+      
+      return NextResponse.json({ 
+        message: 'Notifications marked as read',
+        count: result.modifiedCount 
+      });
     }
 
     return NextResponse.json({ error: 'Invalid request' }, { status: 400 });
@@ -82,6 +154,55 @@ async function putHandler(req: AuthenticatedRequest) {
   }
 }
 
+async function deleteHandler(req: AuthenticatedRequest) {
+  try {
+    await connectDB();
+
+    const body = await req.json();
+    const { notificationIds, deleteAll } = body;
+
+    if (deleteAll) {
+      // Delete all notifications for this user
+      const result = await Notification.deleteMany({
+        userId: new mongoose.Types.ObjectId(req.user!.userId),
+      });
+      console.log(`✅ Deleted ${result.deletedCount} notification(s)`);
+      return NextResponse.json({ 
+        message: 'All notifications deleted',
+        count: result.deletedCount 
+      });
+    }
+
+    if (notificationIds && Array.isArray(notificationIds) && notificationIds.length > 0) {
+      // Convert notification IDs to ObjectIds
+      const objectIds = notificationIds
+        .filter((id: string) => mongoose.Types.ObjectId.isValid(id))
+        .map((id: string) => new mongoose.Types.ObjectId(id));
+      
+      if (objectIds.length === 0) {
+        return NextResponse.json({ error: 'Invalid notification IDs' }, { status: 400 });
+      }
+
+      // Delete specific notifications
+      const result = await Notification.deleteMany({
+        _id: { $in: objectIds },
+        userId: new mongoose.Types.ObjectId(req.user!.userId),
+      });
+      console.log(`✅ Deleted ${result.deletedCount} notification(s)`);
+      return NextResponse.json({ 
+        message: 'Notifications deleted',
+        count: result.deletedCount 
+      });
+    }
+
+    return NextResponse.json({ error: 'Invalid request' }, { status: 400 });
+  } catch (error: any) {
+    console.error('Error deleting notifications:', error);
+    return NextResponse.json({ error: error.message || 'Failed to delete notifications' }, { status: 500 });
+  }
+}
+
 export const GET = requireAuth(getHandler);
 export const PUT = requireAuth(putHandler);
+export const DELETE = requireAuth(deleteHandler);
 

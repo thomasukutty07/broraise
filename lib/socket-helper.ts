@@ -28,13 +28,30 @@ export function emitToRole(role: string, event: string, data: any) {
 export function emitToUser(userId: string, event: string, data: any) {
   const io = getSocketIO();
   if (!io) {
+    console.log(`⚠️ Cannot emit ${event} to user ${userId} - Socket.io not available`);
     return;
   }
-  const room = `user:${userId}`;
+  
+  // Ensure userId is a string
+  const userIdStr = String(userId);
+  const room = `user:${userIdStr}`;
   const clientsInRoom = io.sockets.adapter.rooms.get(room);
   const clientCount = clientsInRoom ? clientsInRoom.size : 0;
   
+  console.log(`📤 Emitting ${event} to user ${userIdStr} (room: ${room}, clients: ${clientCount})`);
+  
+  if (clientCount === 0) {
+    console.warn(`⚠️ WARNING: No clients in room ${room} for user ${userIdStr}! Event will not be delivered.`);
+    console.log(`📤 Available rooms:`, Array.from(io.sockets.adapter.rooms.keys()).filter(r => r.startsWith('user:')).slice(0, 10));
+  }
+  
   io.to(room).emit(event, data);
+  
+  // Also try emitting to all sockets and let client filter (fallback)
+  if (clientCount === 0) {
+    console.log(`📤 Fallback: Broadcasting ${event} to all connected sockets`);
+    io.emit(event, { ...data, _broadcast: true, _targetUserId: userIdStr });
+  }
 }
 
 export function emitToAll(event: string, data: any) {

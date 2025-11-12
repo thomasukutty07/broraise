@@ -9,8 +9,9 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { toast } from 'sonner';
-import { Shield, Mail, Lock, Sparkles, Key, LockKeyhole, Crown, Zap, FileText, BarChart3, Menu } from 'lucide-react';
+import { Shield, Mail, Lock, Key, LockKeyhole, Crown, Zap, FileText, BarChart3, Menu } from 'lucide-react';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
+import PageLoader from '@/components/PageLoader';
 
 export default function AdminLoginPage() {
   const [email, setEmail] = useState('');
@@ -42,11 +43,7 @@ export default function AdminLoginPage() {
 
   // Show loading or nothing while checking auth
   if (authLoading || user) {
-    return (
-      <div className="flex min-h-screen items-center justify-center">
-        <div className="text-lg">Redirecting...</div>
-      </div>
-    );
+    return <PageLoader message="Redirecting..." />;
   }
 
   return (
@@ -55,7 +52,7 @@ export default function AdminLoginPage() {
       <nav className="border-b bg-background/95 backdrop-blur sticky top-0 z-50 w-full overflow-hidden">
         <div className="container mx-auto flex h-14 sm:h-16 items-center justify-between px-3 sm:px-4 lg:px-6 max-w-7xl w-full box-border">
           <Link href="/" className="flex items-center gap-1.5 sm:gap-2 min-w-0 max-w-full">
-            <div className="flex size-7 sm:size-8 items-center justify-center rounded-lg bg-gradient-to-br from-indigo-600 to-purple-600 text-white shrink-0">
+            <div className="flex size-7 sm:size-8 items-center justify-center rounded-lg bg-gradient-to-br from-primary to-primary/80 text-primary-foreground shrink-0">
               <Shield className="size-4 sm:size-5" />
             </div>
             <span className="text-base sm:text-xl font-bold truncate block overflow-hidden text-ellipsis">BroRaise Admin</span>
@@ -169,11 +166,8 @@ export default function AdminLoginPage() {
         <div className="w-full max-w-md">
         <Card className="w-full border-2 shadow-lg-card box-border bg-card animate-fade-in">
           <CardHeader className="space-y-1 text-center pb-6 relative">
-            <div className="mx-auto flex size-20 items-center justify-center rounded-2xl bg-gradient-to-br from-primary via-primary/90 to-primary/80 text-primary-foreground mb-6 shadow-xl shadow-primary/25 transform hover:scale-105 transition-all duration-300 relative">
+            <div className="mx-auto flex size-20 items-center justify-center rounded-2xl bg-gradient-to-br from-primary via-primary/90 to-primary/80 text-primary-foreground mb-6 shadow-xl shadow-primary/25 transform hover:scale-105 transition-all duration-300">
               <Shield className="size-10" />
-              <div className="absolute -top-1 -right-1">
-                <Sparkles className="size-5 text-yellow-400 animate-pulse" />
-              </div>
             </div>
             <CardTitle className="text-3xl font-bold bg-gradient-to-r from-primary via-primary/90 to-primary/80 bg-clip-text text-transparent">
               Admin Login

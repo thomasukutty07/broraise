@@ -5,7 +5,7 @@ import Category from '@/models/Category';
 import { requireAuth, AuthenticatedRequest } from '@/lib/middleware';
 import { z } from 'zod';
 import { createAuditLog } from '@/lib/audit';
-import { sendEmail, getComplaintEmailTemplate } from '@/lib/email';
+import { sendEmail, sendEmailIfEnabled, getComplaintEmailTemplate } from '@/lib/email';
 import User from '@/models/User';
 import { emitToUser, emitToRole } from '@/lib/socket-helper';
 import mongoose from 'mongoose';
@@ -20,7 +20,7 @@ async function getHandler(req: AuthenticatedRequest, context?: { params?: Promis
     }
 
     const complaint = await Complaint.findById(params.id)
-      .populate('category', 'name description')
+      .populate('category', 'name')
       .populate('submittedBy', 'name email avatar')
       .populate('assignedTo', 'name email avatar');
 
@@ -142,14 +142,26 @@ async function updateHandler(req: AuthenticatedRequest, context?: { params?: Pro
         params.id,
         validatedData.resolution || `Status changed to ${complaint.status}`
       );
-      await sendEmail(submittedByUser.email, emailTemplate.subject, emailTemplate.html);
+      await sendEmailIfEnabled(
+        submittedByUser._id.toString(),
+        'statusUpdate',
+        submittedByUser.email,
+        emailTemplate.subject,
+        emailTemplate.html
+      );
     }
 
     if (validatedData.assignedTo && validatedData.assignedTo !== oldAssignedTo) {
       const assignedUser = await User.findById(validatedData.assignedTo);
       if (assignedUser) {
         const emailTemplate = getComplaintEmailTemplate('assigned', complaint.title, params.id);
-        await sendEmail(assignedUser.email, emailTemplate.subject, emailTemplate.html);
+        await sendEmailIfEnabled(
+          assignedUser._id.toString(),
+          'assignment',
+          assignedUser.email,
+          emailTemplate.subject,
+          emailTemplate.html
+        );
         
         // Emit Socket.io event for complaint assignment
         emitToUser(assignedUser._id.toString(), 'complaint_assigned', {

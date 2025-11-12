@@ -196,6 +196,7 @@ export default function NewComplaintPage() {
       const complaint = await response.json();
       toast.success('Complaint submitted successfully!');
       router.push(`/complaints/${complaint._id}`);
+      router.refresh();
     } catch (error: any) {
       toast.error(error.message || 'Failed to submit complaint');
     } finally {

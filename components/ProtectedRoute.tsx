@@ -3,6 +3,7 @@
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/auth-context';
+import PageLoader from './PageLoader';
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -24,11 +25,7 @@ export default function ProtectedRoute({ children, allowedRoles }: ProtectedRout
   }, [user, loading, allowedRoles, router]);
 
   if (loading) {
-    return (
-      <div className="flex min-h-screen items-center justify-center">
-        <div className="text-lg">Loading...</div>
-      </div>
-    );
+    return <PageLoader />;
   }
 
   if (!user) {

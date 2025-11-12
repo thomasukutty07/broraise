@@ -37,6 +37,8 @@ const CommentSchema: Schema = new Schema(
 );
 
 CommentSchema.index({ complaint: 1, createdAt: 1 });
+// Index to help with duplicate detection (same user, same content, same complaint, recent timestamp)
+CommentSchema.index({ complaint: 1, author: 1, content: 1, createdAt: -1 });
 
 export default (mongoose.models.Comment as Model<IComment>) || mongoose.model<IComment>('Comment', CommentSchema);
 

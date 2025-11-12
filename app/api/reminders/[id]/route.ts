@@ -15,17 +15,40 @@ async function patchHandler(req: AuthenticatedRequest, context?: { params?: Prom
       return NextResponse.json({ error: 'Reminder not found' }, { status: 404 });
     }
 
-    // Only the assigned user or admin can mark as completed
-    if (body.isCompleted && reminder.assignedTo.toString() !== req.user!.userId && req.user!.role !== 'admin') {
+    // Only the assigned user or admin can change status
+    if ((body.isCompleted !== undefined || body.status) && reminder.assignedTo.toString() !== req.user!.userId && req.user!.role !== 'admin') {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
     }
 
+    // Backward compatible: isCompleted
     if (body.isCompleted !== undefined) {
       reminder.isCompleted = body.isCompleted;
       if (body.isCompleted) {
         reminder.completedAt = new Date();
+        reminder.status = 'completed';
       } else {
         reminder.completedAt = undefined;
+        if (reminder.status === 'completed') {
+          reminder.status = 'pending';
+        }
+      }
+    }
+
+    // New: status updates
+    if (body.status) {
+      const allowed = ['pending', 'in_progress', 'completed'];
+      if (!allowed.includes(body.status)) {
+        return NextResponse.json({ error: 'Invalid status' }, { status: 400 });
+      }
+      reminder.status = body.status;
+      if (body.status === 'completed') {
+        reminder.isCompleted = true;
+        reminder.completedAt = new Date();
+      } else {
+        reminder.isCompleted = false;
+        if (body.status !== 'completed') {
+          reminder.completedAt = undefined;
+        }
       }
     }
 

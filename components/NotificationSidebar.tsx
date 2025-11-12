@@ -10,10 +10,13 @@ import { Bell, FileText, UserCheck, MessageSquare, CheckCircle2, X, CheckCheck }
 import { format } from 'date-fns';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
+import { toast } from 'sonner';
 
 export function NotificationSidebar() {
   const { notifications, unreadCount, markAsRead, markAllAsRead, clearNotification, clearAll } = useNotificationContext();
   const [open, setOpen] = useState(false);
+  const [isMarkingAll, setIsMarkingAll] = useState(false);
+  const [isClearingAll, setIsClearingAll] = useState(false);
 
   const getNotificationIcon = (type: string) => {
     switch (type) {
@@ -77,21 +80,52 @@ export function NotificationSidebar() {
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={markAllAsRead}
+                    onClick={async (e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      if (isMarkingAll) return;
+                      setIsMarkingAll(true);
+                      try {
+                        console.log('🔄 Mark all as read clicked');
+                        await markAllAsRead();
+                        toast.success('All notifications marked as read');
+                      } catch (error: any) {
+                        console.error('❌ Error marking all as read:', error);
+                        toast.error(error?.message || 'Failed to mark all notifications as read');
+                      } finally {
+                        setIsMarkingAll(false);
+                      }
+                    }}
                     className="text-xs h-8"
-                    disabled={unreadCount === 0}
+                    disabled={unreadCount === 0 || isMarkingAll}
                   >
                     <CheckCheck className="size-3 mr-1" />
-                    Mark all read
+                    {isMarkingAll ? 'Marking...' : 'Mark all read'}
                   </Button>
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={clearAll}
+                    onClick={async (e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      if (isClearingAll) return;
+                      setIsClearingAll(true);
+                      try {
+                        console.log('🔄 Clear all clicked');
+                        await clearAll();
+                        toast.success('All notifications cleared');
+                      } catch (error: any) {
+                        console.error('❌ Error clearing all:', error);
+                        toast.error(error?.message || 'Failed to clear all notifications');
+                      } finally {
+                        setIsClearingAll(false);
+                      }
+                    }}
                     className="text-xs h-8 text-destructive"
+                    disabled={isClearingAll}
                   >
                     <X className="size-3 mr-1" />
-                    Clear all
+                    {isClearingAll ? 'Clearing...' : 'Clear all'}
                   </Button>
                 </>
               )}

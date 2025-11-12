@@ -11,6 +11,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { toast } from 'sonner';
 import { FileText, Mail, Lock, Sparkles, CheckCircle2, MessageSquare, TrendingUp, ArrowRight, Shield, Menu } from 'lucide-react';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
+import PageLoader from '@/components/PageLoader';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -42,11 +43,7 @@ export default function LoginPage() {
 
   // Show loading or nothing while checking auth
   if (authLoading || user) {
-    return (
-      <div className="flex min-h-screen items-center justify-center">
-        <div className="text-lg">Redirecting...</div>
-      </div>
-    );
+    return <PageLoader message="Redirecting..." />;
   }
 
   return (
@@ -120,6 +117,11 @@ export default function LoginPage() {
               <p className="text-xl text-muted-foreground leading-relaxed">
                 Sign in to continue managing your complaints efficiently
               </p>
+              <div className="mt-4 inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-primary/10 dark:bg-primary/20 border border-primary/20">
+                <p className="text-sm text-muted-foreground">
+                  This login is for <span className="text-primary font-semibold">Students</span> and <span className="text-primary font-semibold">Staff</span>
+                </p>
+              </div>
             </div>
           </div>
 
@@ -178,6 +180,11 @@ export default function LoginPage() {
             <CardDescription className="text-base mt-3 text-muted-foreground">
               Sign in to your account to continue
             </CardDescription>
+            <div className="mt-4 px-4 py-2 rounded-lg bg-primary/10 dark:bg-primary/20 border border-primary/20">
+              <p className="text-sm text-center text-muted-foreground font-medium">
+                This login is for <span className="text-primary font-semibold">Students</span> and <span className="text-primary font-semibold">Staff</span>
+              </p>
+            </div>
           </CardHeader>
         <CardContent className="space-y-6">
           <form onSubmit={handleSubmit} className="space-y-5">

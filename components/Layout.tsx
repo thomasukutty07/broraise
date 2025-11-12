@@ -38,13 +38,13 @@ interface LayoutProps {
 }
 
 export default function Layout({ children }: LayoutProps) {
-  const { user, logout } = useAuth();
+  const { user, logout, token } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   // Enable notifications for all authenticated users (students, admin, staff, management)
-  useNotifications();
+  const reminderDialog = useNotifications();
 
   if (!user) return <>{children}</>;
 
@@ -274,6 +274,9 @@ export default function Layout({ children }: LayoutProps) {
           </div>
         </SheetContent>
       </Sheet>
+      
+      {/* Reminder Dialog */}
+      {reminderDialog}
     </div>
   );
 }

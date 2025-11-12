@@ -3,7 +3,7 @@ import mongoose, { Schema, Document, Model } from 'mongoose';
 export interface INotification extends Document {
   _id: mongoose.Types.ObjectId;
   userId: mongoose.Types.ObjectId;
-  type: 'new_complaint' | 'complaint_assigned' | 'complaint_updated' | 'new_comment' | 'status_changed';
+  type: 'new_complaint' | 'complaint_assigned' | 'complaint_updated' | 'new_comment' | 'status_changed' | 'reminder_due';
   complaintId: mongoose.Types.ObjectId;
   title: string;
   message?: string;
@@ -27,7 +27,7 @@ const NotificationSchema: Schema = new Schema(
     },
     type: {
       type: String,
-      enum: ['new_complaint', 'complaint_assigned', 'complaint_updated', 'new_comment', 'status_changed'],
+      enum: ['new_complaint', 'complaint_assigned', 'complaint_updated', 'new_comment', 'status_changed', 'reminder_due'],
       required: true,
     },
     complaintId: {
@@ -70,6 +70,9 @@ const NotificationSchema: Schema = new Schema(
 
 // Compound index for efficient queries
 NotificationSchema.index({ userId: 1, read: 1, createdAt: -1 });
+
+// Index for duplicate checking (userId, complaintId, type)
+NotificationSchema.index({ userId: 1, complaintId: 1, type: 1 });
 
 export default (mongoose.models.Notification as Model<INotification>) ||
   mongoose.model<INotification>('Notification', NotificationSchema);

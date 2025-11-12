@@ -9,6 +9,7 @@ const createReminderSchema = z.object({
   assignedTo: z.string(),
   message: z.string().min(1).max(500),
   reminderDate: z.string(), // ISO date string
+  status: z.enum(['pending', 'in_progress', 'completed']).optional(),
 });
 
 async function createHandler(req: AuthenticatedRequest) {
@@ -17,12 +18,31 @@ async function createHandler(req: AuthenticatedRequest) {
     const body = await req.json();
     const validatedData = createReminderSchema.parse(body);
 
-    const reminder = await Reminder.create({
+    // The client sends an ISO string (UTC) converted from datetime-local
+    // Parse it directly - it's already in UTC format
+    const reminderDate = new Date(validatedData.reminderDate);
+    
+    // Validate the date is valid
+    if (isNaN(reminderDate.getTime())) {
+      return NextResponse.json({ error: 'Invalid reminder date' }, { status: 400 });
+    }
+    
+    // Ensure we're storing the correct UTC time
+    // MongoDB stores dates in UTC, so this should be correct
+
+  const status = validatedData.status ?? 'pending';
+  const isCompleted = status === 'completed';
+  const completedAt = isCompleted ? new Date() : undefined;
+
+  const reminder = await Reminder.create({
       complaint: validatedData.complaintId,
       createdBy: req.user!.userId,
       assignedTo: validatedData.assignedTo,
       message: validatedData.message,
-      reminderDate: new Date(validatedData.reminderDate),
+      reminderDate: reminderDate,
+    status,
+    isCompleted,
+    completedAt,
     });
 
     const populated = await Reminder.findById(reminder._id)
@@ -34,7 +54,14 @@ async function createHandler(req: AuthenticatedRequest) {
       return NextResponse.json({ error: 'Failed to retrieve created reminder' }, { status: 500 });
     }
 
-    return NextResponse.json(populated, { status: 201 });
+    // Convert to plain object and ensure dates are serialized correctly
+    const response = populated.toObject();
+    // Ensure reminderDate is properly serialized as ISO string
+    if (response.reminderDate) {
+      response.reminderDate = new Date(response.reminderDate).toISOString();
+    }
+
+    return NextResponse.json(response, { status: 201 });
   } catch (error: any) {
     if (error instanceof z.ZodError) {
       return NextResponse.json({ error: error.errors }, { status: 400 });
@@ -77,7 +104,19 @@ async function listHandler(req: AuthenticatedRequest) {
       .populate('assignedTo', 'name email')
       .sort({ reminderDate: 1 });
 
-    return NextResponse.json(reminders);
+    // Ensure all dates are properly serialized as ISO strings
+    const serializedReminders = reminders.map(reminder => {
+      const obj = reminder.toObject();
+      if (obj.reminderDate) {
+        obj.reminderDate = new Date(obj.reminderDate).toISOString();
+      }
+      if (obj.completedAt) {
+        obj.completedAt = new Date(obj.completedAt).toISOString();
+      }
+      return obj;
+    });
+
+    return NextResponse.json(serializedReminders);
   } catch (error: any) {
     return NextResponse.json({ error: error.message || 'Failed to fetch reminders' }, { status: 500 });
   }

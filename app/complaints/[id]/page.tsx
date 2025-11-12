@@ -79,7 +79,24 @@ export default function ComplaintDetailPage() {
     try {
       const response = await apiRequest(`/api/complaints/${params.id}/comments`);
       const data = await response.json();
-      setComments(data);
+      
+      // Deduplicate comments by _id to prevent duplicates in the UI
+      const uniqueComments = data.reduce((acc: any[], comment: any) => {
+        const existing = acc.find((c) => c._id === comment._id);
+        if (!existing) {
+          acc.push(comment);
+        }
+        return acc;
+      }, []);
+      
+      // Sort by createdAt to maintain order
+      uniqueComments.sort((a, b) => {
+        const dateA = new Date(a.createdAt).getTime();
+        const dateB = new Date(b.createdAt).getTime();
+        return dateA - dateB;
+      });
+      
+      setComments(uniqueComments);
     } catch (error: any) {
       console.error('Failed to fetch comments:', error);
       // If unauthorized, the token might be expired - try to refresh or show a message
@@ -93,11 +110,20 @@ export default function ComplaintDetailPage() {
     try {
       const response = await apiRequest(`/api/complaints/${params.id}/feedback`);
       const data = await response.json();
-      setFeedback(data);
-      if (data.rating) setRating(data.rating);
-      if (data.comment) setFeedbackComment(data.comment);
-    } catch (error) {
-      // Feedback might not exist yet
+      // API returns null if feedback doesn't exist (which is normal)
+      if (data) {
+        setFeedback(data);
+        if (data.rating) setRating(data.rating);
+        if (data.comment) setFeedbackComment(data.comment);
+      } else {
+        setFeedback(null);
+      }
+    } catch (error: any) {
+      // Only log if it's not a 404 (which is expected when feedback doesn't exist)
+      if (error.message && !error.message.includes('not found') && !error.message.includes('404')) {
+        console.error('Error fetching feedback:', error);
+      }
+      setFeedback(null);
     }
   };
 
@@ -140,13 +166,50 @@ export default function ComplaintDetailPage() {
   const handleCreateReminder = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
+      // Convert datetime-local to ISO string with timezone
+      // datetime-local format: "YYYY-MM-DDTHH:mm" (local time, no timezone)
+      // We need to create a Date object that represents this time in the user's local timezone
+      // Then convert to UTC for storage
+      
+      // Parse the datetime-local string (format: "YYYY-MM-DDTHH:mm")
+      const [datePart, timePart] = reminderForm.reminderDate.split('T');
+      if (!datePart || !timePart) {
+        toast.error('Invalid reminder date format');
+        return;
+      }
+      
+      const [year, month, day] = datePart.split('-').map(Number);
+      const [hours, minutes] = timePart.split(':').map(Number);
+      
+      // Create a Date object using the Date constructor with local time components
+      // This creates a date in the user's local timezone
+      const localDate = new Date(year, month - 1, day, hours, minutes, 0, 0);
+      
+      // Validate the date is valid
+      if (isNaN(localDate.getTime())) {
+        toast.error('Invalid reminder date');
+        return;
+      }
+      
+      // Debug: Log the conversion to verify it's correct
+      console.log('Reminder date conversion:', {
+        input: reminderForm.reminderDate,
+        localDate: localDate.toString(),
+        iso: localDate.toISOString(),
+        localHours: localDate.getHours(),
+        utcHours: localDate.getUTCHours(),
+      });
+      
+      // Convert to ISO string (UTC) - this is what MongoDB expects
+      const reminderDateISO = localDate.toISOString();
+      
       await apiRequest('/api/reminders', {
         method: 'POST',
         body: JSON.stringify({
           complaintId: params.id,
           assignedTo: reminderForm.assignedTo,
           message: reminderForm.message,
-          reminderDate: reminderForm.reminderDate,
+          reminderDate: reminderDateISO,
         }),
       });
       toast.success('Reminder created successfully');
@@ -170,6 +233,19 @@ export default function ComplaintDetailPage() {
       toast.error(error.message || 'Failed to update reminder');
     }
   };
+  const handleUpdateReminderStatus = async (reminderId: string, newStatus: 'pending' | 'in_progress' | 'completed') => {
+    try {
+      await apiRequest(`/api/reminders/${reminderId}`, {
+        method: 'PATCH',
+        body: JSON.stringify({ status: newStatus }),
+      });
+      const msg = newStatus === 'in_progress' ? 'Reminder marked In Progress' : newStatus === 'completed' ? 'Reminder marked Completed' : 'Reminder set to Pending';
+      toast.success(msg);
+      fetchReminders();
+    } catch (error: any) {
+      toast.error(error.message || 'Failed to update reminder status');
+    }
+  };
 
   const handleDeleteReminder = async (reminderId: string) => {
     if (!confirm('Are you sure you want to delete this reminder?')) return;
@@ -186,19 +262,34 @@ export default function ComplaintDetailPage() {
 
   const handleCommentSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!commentText.trim()) return;
+    if (!commentText.trim() || submittingComment) return;
 
+    // Prevent double submission
+    if (submittingComment) {
+      return;
+    }
+
+    const commentContent = commentText.trim();
     setSubmittingComment(true);
+    
     try {
-      await apiRequest(`/api/complaints/${params.id}/comments`, {
+      const response = await apiRequest(`/api/complaints/${params.id}/comments`, {
         method: 'POST',
-        body: JSON.stringify({ content: commentText }),
+        body: JSON.stringify({ content: commentContent }),
       });
+      
+      const newComment = await response.json();
+      
+      // Clear the input immediately
       setCommentText('');
-      fetchComments();
+      
+      // Refresh comments to get the latest list
+      await fetchComments();
+      
       toast.success('Comment added');
     } catch (error: any) {
       toast.error(error.message || 'Failed to add comment');
+      // Don't clear the input on error so user can retry
     } finally {
       setSubmittingComment(false);
     }
@@ -241,6 +332,7 @@ export default function ComplaintDetailPage() {
 
       toast.success('Complaint updated');
       fetchComplaint();
+      router.refresh();
     } catch (error: any) {
       toast.error(error.message || 'Failed to update complaint');
     }
@@ -545,7 +637,7 @@ export default function ComplaintDetailPage() {
                             <div
                               key={reminder._id}
                               className={`p-3 border rounded-md ${
-                                reminder.isCompleted
+                                reminder.isCompleted || reminder.status === 'completed'
                                   ? 'bg-muted/50 opacity-60'
                                   : isOverdue
                                   ? 'bg-red-500/10 border-red-500/50'
@@ -557,33 +649,93 @@ export default function ComplaintDetailPage() {
                                   <div className="flex items-center gap-2">
                                     <Bell className={`size-4 ${isOverdue ? 'text-red-600' : 'text-blue-600'}`} />
                                     <span className="text-sm font-medium">{reminder.message}</span>
+                                    {reminder.status && (
+                                      <span
+                                        className={`text-[10px] px-2 py-0.5 rounded-full border ${
+                                          reminder.status === 'in_progress'
+                                            ? 'bg-blue-500/10 text-blue-700 border-blue-200'
+                                            : reminder.status === 'completed'
+                                            ? 'bg-green-500/10 text-green-700 border-green-200'
+                                            : 'bg-yellow-500/10 text-yellow-700 border-yellow-200'
+                                        }`}
+                                      >
+                                        {reminder.status.replace('_', ' ')}
+                                      </span>
+                                    )}
                                   </div>
                                   <div className="text-xs text-muted-foreground space-y-1">
                                     <p>
                                       Assigned to: {reminder.assignedTo?.name || 'Unknown'} •{' '}
-                                      {format(parseISO(reminder.reminderDate), 'PPp')}
+                                      {(() => {
+                                        // Handle date conversion properly - MongoDB dates come as ISO strings (UTC)
+                                        let date: Date;
+                                        if (typeof reminder.reminderDate === 'string') {
+                                          // ISO string from MongoDB is in UTC (ends with 'Z')
+                                          // new Date() correctly parses UTC ISO strings
+                                          date = new Date(reminder.reminderDate);
+                                        } else if (reminder.reminderDate instanceof Date) {
+                                          date = reminder.reminderDate;
+                                        } else {
+                                          // Fallback: create from the value
+                                          date = new Date(reminder.reminderDate);
+                                        }
+                                        
+                                        // Debug: Log the date conversion for troubleshooting
+                                        if (process.env.NODE_ENV === 'development') {
+                                          console.log('Displaying reminder date:', {
+                                            original: reminder.reminderDate,
+                                            parsed: date.toString(),
+                                            iso: date.toISOString(),
+                                            localHours: date.getHours(),
+                                            utcHours: date.getUTCHours(),
+                                            formatted: format(date, 'PPp'),
+                                          });
+                                        }
+                                        
+                                        // format() automatically converts UTC to local timezone for display
+                                        return format(date, 'PPp');
+                                      })()}
                                     </p>
                                     {isOverdue && (
                                       <p className="text-red-600 font-medium">⚠️ Overdue</p>
                                     )}
-                                    {reminder.isCompleted && reminder.completedAt && (
+                                    {(reminder.isCompleted || reminder.status === 'completed') && reminder.completedAt && (
                                       <p className="text-green-600">
-                                        ✓ Completed on {format(parseISO(reminder.completedAt), 'PPp')}
+                                        ✓ Completed on {(() => {
+                                          let date: Date;
+                                          if (typeof reminder.completedAt === 'string') {
+                                            date = parseISO(reminder.completedAt);
+                                          } else if (reminder.completedAt instanceof Date) {
+                                            date = reminder.completedAt;
+                                          } else {
+                                            date = new Date(reminder.completedAt);
+                                          }
+                                          return format(date, 'PPp');
+                                        })()}
                                       </p>
                                     )}
                                   </div>
                                 </div>
                                 <div className="flex gap-1">
-                                  {!reminder.isCompleted && (
+                                  {reminder.status !== 'in_progress' && reminder.status !== 'completed' && (
                                     <Button
                                       variant="ghost"
                                       size="sm"
-                                      onClick={() => handleToggleReminder(reminder._id, true)}
+                                      onClick={() => handleUpdateReminderStatus(reminder._id, 'in_progress')}
+                                    >
+                                      In Progress
+                                    </Button>
+                                  )}
+                                  {reminder.status !== 'completed' && (
+                                    <Button
+                                      variant="ghost"
+                                      size="sm"
+                                      onClick={() => handleUpdateReminderStatus(reminder._id, 'completed')}
                                     >
                                       <CheckCircle className="size-4" />
                                     </Button>
                                   )}
-                                  {reminder.isCompleted && (
+                                  {(reminder.isCompleted || reminder.status === 'completed') && (
                                     <Button
                                       variant="ghost"
                                       size="sm"
@@ -611,11 +763,88 @@ export default function ComplaintDetailPage() {
                   </div>
                 </>
               )}
+
+              {/* Feedback Section */}
+              {complaint.status === 'resolved' &&
+                user?.role === 'student' &&
+                complaint.submittedBy?._id === user?.id &&
+                !feedback && (
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <Star className="size-5" />
+                        Rate Your Experience
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <form onSubmit={handleFeedbackSubmit} className="space-y-4">
+                        <div className="space-y-2">
+                          <Label>Rating</Label>
+                          <div className="flex gap-2">
+                            {[1, 2, 3, 4, 5].map((star) => (
+                              <button
+                                key={star}
+                                type="button"
+                                onClick={() => setRating(star)}
+                                className={cn(
+                                  'text-2xl transition-colors',
+                                  star <= rating ? 'text-yellow-500' : 'text-muted-foreground'
+                                )}
+                              >
+                                ★
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                        <div className="space-y-2">
+                          <Label>Additional Comments</Label>
+                          <Textarea
+                            value={feedbackComment}
+                            onChange={(e) => setFeedbackComment(e.target.value)}
+                            placeholder="Share your thoughts..."
+                            rows={4}
+                          />
+                        </div>
+                        <Button type="submit" disabled={submittingFeedback || rating === 0}>
+                          {submittingFeedback ? 'Submitting...' : 'Submit Feedback'}
+                        </Button>
+                      </form>
+                    </CardContent>
+                  </Card>
+                )}
+
+              {feedback && (
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Star className="size-5" />
+                      Your Feedback
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="flex items-center gap-2 mb-2">
+                      {[1, 2, 3, 4, 5].map((star) => (
+                        <span
+                          key={star}
+                          className={cn(
+                            'text-xl',
+                            star <= feedback.rating ? 'text-yellow-500' : 'text-muted-foreground'
+                          )}
+                        >
+                          ★
+                        </span>
+                      ))}
+                      <span className="text-sm text-muted-foreground">({feedback.rating}/5)</span>
+                    </div>
+                    {feedback.comment && <p className="text-sm">{feedback.comment}</p>}
+                  </CardContent>
+                </Card>
+              )}
             </CardContent>
           </Card>
             </div>
 
-            {/* Right Column - Comments and Feedback */}
+            {/* Right Column - Comments */}
             <div className="space-y-6">
               <Card>
                 <CardHeader>
@@ -757,82 +986,6 @@ export default function ComplaintDetailPage() {
               )}
             </CardContent>
           </Card>
-
-              {complaint.status === 'resolved' &&
-                user?.role === 'student' &&
-                complaint.submittedBy?._id === user?.id &&
-                !feedback && (
-                  <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Star className="size-5" />
-                    Rate Your Experience
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <form onSubmit={handleFeedbackSubmit} className="space-y-4">
-                    <div className="space-y-2">
-                      <Label>Rating</Label>
-                      <div className="flex gap-2">
-                        {[1, 2, 3, 4, 5].map((star) => (
-                          <button
-                            key={star}
-                            type="button"
-                            onClick={() => setRating(star)}
-                            className={cn(
-                              'text-2xl transition-colors',
-                              star <= rating ? 'text-yellow-500' : 'text-muted-foreground'
-                            )}
-                          >
-                            ★
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                    <div className="space-y-2">
-                      <Label>Additional Comments</Label>
-                      <Textarea
-                        value={feedbackComment}
-                        onChange={(e) => setFeedbackComment(e.target.value)}
-                        placeholder="Share your thoughts..."
-                        rows={4}
-                      />
-                    </div>
-                    <Button type="submit" disabled={submittingFeedback || rating === 0}>
-                      {submittingFeedback ? 'Submitting...' : 'Submit Feedback'}
-                    </Button>
-                  </form>
-                </CardContent>
-              </Card>
-              )}
-
-              {feedback && (
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <Star className="size-5" />
-                      Your Feedback
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="flex items-center gap-2 mb-2">
-                      {[1, 2, 3, 4, 5].map((star) => (
-                        <span
-                          key={star}
-                          className={cn(
-                            'text-xl',
-                            star <= feedback.rating ? 'text-yellow-500' : 'text-muted-foreground'
-                          )}
-                        >
-                          ★
-                        </span>
-                      ))}
-                      <span className="text-sm text-muted-foreground">({feedback.rating}/5)</span>
-                    </div>
-                    {feedback.comment && <p className="text-sm">{feedback.comment}</p>}
-                  </CardContent>
-                </Card>
-              )}
             </div>
           </div>
         </div>

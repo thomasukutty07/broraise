@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import Layout from '@/components/Layout';
 import { useAuth } from '@/lib/auth-context';
@@ -20,6 +21,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 
 export default function ComplaintsPage() {
+  const router = useRouter();
   const { user } = useAuth();
   const [complaints, setComplaints] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -188,6 +190,10 @@ export default function ComplaintsPage() {
       setBulkActionOpen(false);
       setBulkValue('');
       fetchComplaints();
+      // Refresh page if assignment action
+      if (bulkAction === 'assign') {
+        router.refresh();
+      }
     } catch (error: any) {
       toast.error(error.message || 'Failed to update complaints');
     } finally {

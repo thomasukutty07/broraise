@@ -5,7 +5,7 @@ import Category from '@/models/Category';
 import { requireAuth, AuthenticatedRequest } from '@/lib/middleware';
 import { z } from 'zod';
 import { createAuditLog } from '@/lib/audit';
-import { sendEmail, getComplaintEmailTemplate } from '@/lib/email';
+import { sendEmail, sendEmailIfEnabled, getComplaintEmailTemplate } from '@/lib/email';
 import User from '@/models/User';
 import Settings from '@/models/Settings';
 import { emitToRole, emitToUser } from '@/lib/socket-helper';
@@ -93,7 +93,13 @@ async function createHandler(req: AuthenticatedRequest) {
         complaint.title,
         complaint._id.toString()
       );
-      await sendEmail(user.email, emailTemplate.subject, emailTemplate.html);
+      await sendEmailIfEnabled(
+        user._id.toString(),
+        'newComplaint',
+        user.email,
+        emailTemplate.subject,
+        emailTemplate.html
+      );
     }
 
     const populatedComplaint = await Complaint.findById(complaint._id)

@@ -3,7 +3,6 @@ import mongoose, { Schema, Document, Model } from 'mongoose';
 export interface ICategory extends Document {
   _id: mongoose.Types.ObjectId;
   name: string;
-  description?: string;
   isActive: boolean;
   createdAt: Date;
   updatedAt: Date;
@@ -15,10 +14,6 @@ const CategorySchema: Schema = new Schema(
       type: String,
       required: true,
       unique: true,
-      trim: true,
-    },
-    description: {
-      type: String,
       trim: true,
     },
     isActive: {

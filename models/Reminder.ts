@@ -7,6 +7,7 @@ export interface IReminder extends Document {
   assignedTo: mongoose.Types.ObjectId;
   message: string;
   reminderDate: Date;
+  status: 'pending' | 'in_progress' | 'completed';
   isCompleted: boolean;
   completedAt?: Date;
   createdAt: Date;
@@ -20,6 +21,7 @@ const ReminderSchema: Schema = new Schema(
     assignedTo: { type: Schema.Types.ObjectId, ref: 'User', required: true },
     message: { type: String, required: true },
     reminderDate: { type: Date, required: true },
+    status: { type: String, enum: ['pending', 'in_progress', 'completed'], default: 'pending' },
     isCompleted: { type: Boolean, default: false },
     completedAt: { type: Date },
   },
@@ -28,6 +30,7 @@ const ReminderSchema: Schema = new Schema(
 
 ReminderSchema.index({ complaint: 1, reminderDate: 1 });
 ReminderSchema.index({ assignedTo: 1, isCompleted: 1, reminderDate: 1 });
+ReminderSchema.index({ assignedTo: 1, status: 1, reminderDate: 1 });
 
 export default (mongoose.models.Reminder as Model<IReminder>) ||
   mongoose.model<IReminder>('Reminder', ReminderSchema);

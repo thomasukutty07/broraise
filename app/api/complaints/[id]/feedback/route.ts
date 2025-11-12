@@ -70,15 +70,23 @@ async function getHandler(req: AuthenticatedRequest, context?: { params?: Promis
       return NextResponse.json({ error: 'Complaint ID is required' }, { status: 400 });
     }
 
+    // Verify complaint exists
+    const complaint = await Complaint.findById(params.id);
+    if (!complaint) {
+      return NextResponse.json({ error: 'Complaint not found' }, { status: 404 });
+    }
+
     const feedback = await Feedback.findOne({ complaint: params.id })
       .populate('submittedBy', 'name email');
 
+    // Return null instead of 404 - feedback might not exist yet, which is normal
     if (!feedback) {
-      return NextResponse.json({ error: 'Feedback not found' }, { status: 404 });
+      return NextResponse.json(null, { status: 200 });
     }
 
     return NextResponse.json(feedback);
   } catch (error: any) {
+    console.error('Error fetching feedback:', error);
     return NextResponse.json({ error: error.message || 'Failed to fetch feedback' }, { status: 500 });
   }
 }
