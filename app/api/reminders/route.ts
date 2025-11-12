@@ -108,14 +108,13 @@ async function listHandler(req: AuthenticatedRequest) {
 
     // Ensure all dates are properly serialized as ISO strings
     const serializedReminders = reminders.map(reminder => {
-      const obj = reminder.toObject();
-      if (obj.reminderDate) {
-        obj.reminderDate = new Date(obj.reminderDate).toISOString();
-      }
-      if (obj.completedAt) {
-        obj.completedAt = new Date(obj.completedAt).toISOString();
-      }
-      return obj;
+      const plain = reminder.toObject() as any;
+      const { reminderDate: rd, completedAt: ca, ...rest } = plain;
+      return {
+        ...rest,
+        reminderDate: rd ? new Date(rd).toISOString() : undefined,
+        ...(ca ? { completedAt: new Date(ca).toISOString() } : {}),
+      };
     });
 
     return NextResponse.json(serializedReminders);
