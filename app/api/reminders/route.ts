@@ -55,13 +55,15 @@ async function createHandler(req: AuthenticatedRequest) {
     }
 
     // Convert to plain object and ensure dates are serialized correctly
-    const response = populated.toObject();
-    // Ensure reminderDate is properly serialized as ISO string
-    if (response.reminderDate) {
-      response.reminderDate = new Date(response.reminderDate).toISOString();
-    }
+    const plain = populated.toObject() as any;
+    const { reminderDate: rd, completedAt: ca, ...rest } = plain;
+    const serializedResponse = {
+      ...rest,
+      reminderDate: rd ? new Date(rd).toISOString() : undefined,
+      ...(ca ? { completedAt: new Date(ca).toISOString() } : {}),
+    };
 
-    return NextResponse.json(response, { status: 201 });
+    return NextResponse.json(serializedResponse, { status: 201 });
   } catch (error: any) {
     if (error instanceof z.ZodError) {
       return NextResponse.json({ error: error.errors }, { status: 400 });
