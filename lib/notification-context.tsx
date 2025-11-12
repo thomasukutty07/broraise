@@ -229,8 +229,8 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
           notificationId: id,
           stack: error.stack,
           response: response ? {
-            status: response.status,
-            statusText: response.statusText,
+            status: (response as any).status,
+            statusText: (response as any).statusText,
           } : null,
         });
         // Revert local state if API call failed
