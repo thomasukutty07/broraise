@@ -191,14 +191,7 @@ export default function ComplaintDetailPage() {
         return;
       }
       
-      // Debug: Log the conversion to verify it's correct
-      console.log('Reminder date conversion:', {
-        input: reminderForm.reminderDate,
-        localDate: localDate.toString(),
-        iso: localDate.toISOString(),
-        localHours: localDate.getHours(),
-        utcHours: localDate.getUTCHours(),
-      });
+      // Conversion verified locally
       
       // Convert to ISO string (UTC) - this is what MongoDB expects
       const reminderDateISO = localDate.toISOString();
@@ -678,18 +671,6 @@ export default function ComplaintDetailPage() {
                                         } else {
                                           // Fallback: create from the value
                                           date = new Date(reminder.reminderDate);
-                                        }
-                                        
-                                        // Debug: Log the date conversion for troubleshooting
-                                        if (process.env.NODE_ENV === 'development') {
-                                          console.log('Displaying reminder date:', {
-                                            original: reminder.reminderDate,
-                                            parsed: date.toString(),
-                                            iso: date.toISOString(),
-                                            localHours: date.getHours(),
-                                            utcHours: date.getUTCHours(),
-                                            formatted: format(date, 'PPp'),
-                                          });
                                         }
                                         
                                         // format() automatically converts UTC to local timezone for display

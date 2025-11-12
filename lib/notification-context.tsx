@@ -47,7 +47,7 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
         }));
       }
     } catch (error) {
-      console.error('Failed to load notifications from localStorage:', error);
+      
     }
     return [];
   });
@@ -58,7 +58,7 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
       try {
         localStorage.setItem(NOTIFICATIONS_STORAGE_KEY, JSON.stringify(notifications));
       } catch (error) {
-        console.error('Failed to save notifications to localStorage:', error);
+        
       }
     }
   }, [notifications]);
@@ -76,7 +76,6 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
           const THIRTY_SECONDS = 30 * 1000;
           
           if (!isNaN(timestamp) && timeSinceCleared < THIRTY_SECONDS) {
-            console.log(`📋 Notifications were cleared ${Math.round(timeSinceCleared / 1000)}s ago, skipping add from database`);
             return prev; // Don't add notifications if they were recently cleared
           }
         }
@@ -112,17 +111,14 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
             // Only update if we're marking as read (true), not if we're marking as unread (false)
             // This prevents database fetches from overwriting our "mark all as read" action
             if (readStatus === true || prev[existingIndex].read === false) {
-              console.log(`📋 Updating read status for notification ${dbId} to ${readStatus}`);
               const updated = [...prev];
               updated[existingIndex] = { ...updated[existingIndex], read: readStatus };
               return updated;
             } else {
               // Local state has read=true, database has read=false - keep local state (read=true)
-              console.log(`📋 Keeping notification ${dbId} as read=true (database may be stale)`);
               return prev;
             }
           }
-          console.log(`📋 Notification ${dbId} already exists, skipping`);
           return prev; // Already exists, don't add again
         }
       }
@@ -244,13 +240,13 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
   };
 
   const markAllAsRead = async () => {
-    console.log('🔄 markAllAsRead called');
+      
     
     // CRITICAL: Set a flag to prevent database fetches from overwriting our changes
     if (typeof window !== 'undefined') {
       const timestamp = Date.now();
       localStorage.setItem('notifications_marked_read', timestamp.toString());
-      console.log('📋 Set notifications_marked_read flag with timestamp:', timestamp);
+      
     }
     
     // Update local state immediately for better UX
@@ -259,7 +255,7 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
     setNotifications((prev) => {
       previousNotifications = [...prev];
       updatedNotifications = prev.map((n) => ({ ...n, read: true }));
-      console.log(`📋 Updated ${updatedNotifications.length} notifications to read=true`);
+      
       return updatedNotifications;
     });
     
@@ -268,9 +264,9 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
     if (typeof window !== 'undefined') {
       try {
         localStorage.setItem(NOTIFICATIONS_STORAGE_KEY, JSON.stringify(updatedNotifications));
-        console.log('📋 Updated localStorage with all notifications marked as read');
+        
       } catch (error) {
-        console.error('Failed to update localStorage:', error);
+        
         throw new Error('Failed to update localStorage');
       }
     }
@@ -278,7 +274,7 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
     // Sync with database - mark all database notifications as read
     if (typeof window !== 'undefined') {
       try {
-        console.log('📤 Calling API to mark all notifications as read');
+        
         // Use markAllAsRead flag to mark all unread notifications as read in database
         const response = await apiRequest('/api/notifications', {
           method: 'PUT',
@@ -286,13 +282,13 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
         });
         
         const result = await response.json();
-        console.log(`✅ Marked all notifications as read (count: ${result.count || 0})`);
+        
         
         // Clear the flag after successful update (give it 5 seconds to prevent race conditions)
         setTimeout(() => {
           if (typeof window !== 'undefined') {
             localStorage.removeItem('notifications_marked_read');
-            console.log('📋 Cleared notifications_marked_read flag');
+          
           }
         }, 5000);
       } catch (error: any) {
@@ -356,13 +352,13 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
   };
 
   const clearAll = async () => {
-    console.log('🔄 clearAll called');
+    
     
     // Store previous state in case we need to revert
     let previousNotifications: Notification[] = [];
     setNotifications((prev) => {
       previousNotifications = [...prev];
-      console.log(`📋 Clearing ${previousNotifications.length} notifications from local state`);
+      
       return [];
     });
 
@@ -370,9 +366,9 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
     if (typeof window !== 'undefined') {
       try {
         localStorage.removeItem(NOTIFICATIONS_STORAGE_KEY);
-        console.log('📋 Cleared notifications from localStorage');
+        
       } catch (error) {
-        console.error('Failed to clear notifications from localStorage:', error);
+        
         throw new Error('Failed to clear localStorage');
       }
       
@@ -380,13 +376,13 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
       // Include timestamp so we can check if it's still valid
       const timestamp = Date.now();
       localStorage.setItem('notifications_cleared', timestamp.toString());
-      console.log('📋 Set notifications_cleared flag with timestamp:', timestamp);
+      
     }
 
     // Delete all from database
     if (typeof window !== 'undefined') {
       try {
-        console.log('📤 Calling API to delete all notifications');
+        
         // Delete all database notifications for this user using apiRequest
         const response = await apiRequest('/api/notifications', {
           method: 'DELETE',
@@ -394,7 +390,7 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
         });
         
         const result = await response.json();
-        console.log(`✅ Cleared all notifications (deleted ${result.count || 0} from database)`);
+        
         
         // Keep the flag set - it will be cleared after 30 seconds in use-notifications.tsx
       } catch (error: any) {

@@ -84,11 +84,11 @@ app.prepare().then(() => {
     socket.join(userRoom);
     socket.join(roleRoom);
     
-    console.log(`🔌 Socket connected - User: ${user.userId}, Socket ID: ${socket.id}, Joined rooms: ${userRoom}, ${roleRoom}`);
+    
 
     socket.on('disconnect', () => {
       connectedUsers.delete(userKey);
-      console.log(`🔌 Socket disconnected - User: ${user.userId}, Socket ID: ${socket.id}`);
+      
     });
   });
 
@@ -99,20 +99,15 @@ app.prepare().then(() => {
   // Use dynamic import for ES modules (works in Node.js 14+)
   setTimeout(async () => {
     try {
-      console.log('🔄 Attempting to start reminder checker...');
       // Dynamic import for ES modules
       const reminderChecker = await import('./lib/reminder-checker.ts');
-      console.log('📦 Reminder checker module loaded:', Object.keys(reminderChecker));
       if (reminderChecker.startReminderChecker) {
-        console.log('✅ Calling startReminderChecker...');
         reminderChecker.startReminderChecker();
-        console.log('✅ startReminderChecker called successfully');
       } else {
         console.error('❌ startReminderChecker function not found in module');
       }
     } catch (err) {
       console.error('❌ Failed to start reminder checker:', err);
-      console.error('❌ Error stack:', err.stack);
       // Continue even if reminder checker fails to start
     }
   }, 2000); // Wait 2 seconds for everything to initialize

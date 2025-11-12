@@ -185,6 +185,15 @@ export default function LoginPage() {
                 This login is for <span className="text-primary font-semibold">Students</span> and <span className="text-primary font-semibold">Staff</span>
               </p>
             </div>
+            <div className="mt-3 px-4 py-2 rounded-lg bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-700">
+              <p className="text-xs sm:text-sm text-amber-700 dark:text-amber-300 text-center">
+                Staff accounts are created by admins. If you need access, please contact your administrator.
+                {' '}<span className="hidden sm:inline">Admins can sign in to manage staff users.</span>{' '}
+                <Link href="/admin/login" className="font-semibold underline underline-offset-4 decoration-amber-400 hover:decoration-amber-500">
+                  Admin sign in
+                </Link>
+              </p>
+            </div>
           </CardHeader>
         <CardContent className="space-y-6">
           <form onSubmit={handleSubmit} className="space-y-5">

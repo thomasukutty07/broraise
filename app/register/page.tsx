@@ -10,7 +10,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { toast } from 'sonner';
-import { UserPlus, Mail, Lock, User, Building, Sparkles, Star, Rocket, Heart, CheckCircle2, ArrowRight, Shield, Menu, FileText, UserCircle, GraduationCap, Briefcase, KeyRound, LogIn } from 'lucide-react';
+import { UserPlus, Mail, Lock, User, Building, Sparkles, Star, Rocket, Heart, CheckCircle2, ArrowRight, Shield, Menu, FileText, KeyRound, LogIn } from 'lucide-react';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 
 export default function RegisterPage() {
@@ -18,7 +18,7 @@ export default function RegisterPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [role, setRole] = useState<'student' | 'staff'>('student');
+  // Role is enforced as 'student' in the API; do not expose role selection publicly
   const [branch, setBranch] = useState('');
   const [loading, setLoading] = useState(false);
   const { register, user, loading: authLoading } = useAuth();
@@ -47,7 +47,8 @@ export default function RegisterPage() {
     setLoading(true);
 
     try {
-      await register(name, email, password, role, branch);
+      // Do not send role from public registration; API enforces 'student'
+      await register(name, email, password, undefined, branch);
       toast.success('Registration successful!');
     } catch (error: any) {
       toast.error(error.message || 'Registration failed');
@@ -243,28 +244,6 @@ export default function RegisterPage() {
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
               <div className="space-y-2">
-                <Label htmlFor="role" className="text-sm font-semibold flex items-center gap-2">
-                  <UserCircle className="size-4" />
-                  Role
-                </Label>
-                <Select value={role} onValueChange={(value) => setRole(value as 'student' | 'staff')}>
-                  <SelectTrigger className="h-12 rounded-lg border-2">
-                    <div className="flex items-center gap-2">
-                      {role === 'student' ? (
-                        <GraduationCap className="size-4 text-muted-foreground" />
-                      ) : (
-                        <Briefcase className="size-4 text-muted-foreground" />
-                      )}
-                      <SelectValue placeholder="Select role" />
-                    </div>
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="student">Student</SelectItem>
-                    <SelectItem value="staff">Staff</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
                 <Label htmlFor="branch" className="text-sm font-semibold">Branch (Optional)</Label>
                 <div className="relative">
                   <Building className="absolute left-4 top-1/2 -translate-y-1/2 size-5 text-muted-foreground" />
@@ -278,6 +257,7 @@ export default function RegisterPage() {
                   />
                 </div>
               </div>
+              <div />
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
               <div className="space-y-2">

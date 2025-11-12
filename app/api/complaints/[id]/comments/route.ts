@@ -55,7 +55,7 @@ async function createHandler(req: AuthenticatedRequest, context?: { params?: Pro
     });
 
     if (duplicateComment) {
-      console.log('⚠️ Duplicate comment detected, returning existing comment');
+      
       const existingComment = await Comment.findById(duplicateComment._id)
         .populate('author', 'name email avatar role');
       return NextResponse.json(existingComment, { status: 200 });

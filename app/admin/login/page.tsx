@@ -175,6 +175,11 @@ export default function AdminLoginPage() {
             <CardDescription className="text-base mt-3 text-muted-foreground">
               Sign in to access the admin panel
             </CardDescription>
+            <div className="mt-4 px-4 py-2 rounded-lg bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-700">
+              <p className="text-xs sm:text-sm text-amber-700 dark:text-amber-300 text-center">
+                Only admins can create staff accounts. Sign in to add staff users from the admin area.
+              </p>
+            </div>
           </CardHeader>
         <CardContent className="space-y-6">
           <form onSubmit={handleSubmit} className="space-y-5">

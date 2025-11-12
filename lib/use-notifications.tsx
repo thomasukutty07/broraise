@@ -37,7 +37,7 @@ const initAudioContext = () => {
       audioContextInstance = new (window.AudioContext || (window as any).webkitAudioContext)();
       audioContextInitialized = true;
     } catch (error) {
-      console.error('Failed to create audio context:', error);
+      
     }
   }
 };
@@ -65,7 +65,6 @@ const playBeepSound = async () => {
     }
 
     if (!audioContextInstance) {
-      console.warn('Audio context not available');
       return;
     }
 
@@ -92,7 +91,7 @@ const playBeepSound = async () => {
           oscillator.start(audioContextInstance!.currentTime);
           oscillator.stop(audioContextInstance!.currentTime + 0.2);
         } catch (error) {
-          console.error('Failed to play beep:', error);
+          
         }
       }, delay);
     };
@@ -102,7 +101,7 @@ const playBeepSound = async () => {
     playBeep(250);
     playBeep(500);
   } catch (error) {
-    console.error('Failed to play beep sound:', error);
+    
   }
 };
 
@@ -117,13 +116,7 @@ export function useNotifications() {
   // Track recently processed events to prevent duplicates
   const processedEventsRef = useRef<Map<string, number>>(new Map());
   
-  // Debug: Log user and socket info
-  useEffect(() => {
-    if (user) {
-      console.log('🔔 useNotifications initialized - User ID:', user.id, 'Socket connected:', isConnected, 'Socket ID:', socket?.id);
-      console.log('🔔 Expected socket room:', `user:${user.id}`);
-    }
-  }, [user?.id, isConnected, socket?.id]);
+  
   // State for reminder dialog
   const [reminderDialog, setReminderDialog] = useState<{
     open: boolean;
@@ -177,7 +170,6 @@ export function useNotifications() {
         
         // If notifications were cleared recently, don't reset the flag
         if (!isNaN(timestamp) && timeSinceCleared < THIRTY_SECONDS) {
-          console.log('📋 Notifications were cleared, keeping fetch flag set');
           fetchedDBNotificationsRef.current = true;
           return;
         }
@@ -204,7 +196,6 @@ export function useNotifications() {
         const THIRTY_SECONDS = 30 * 1000;
         
         if (!isNaN(timestamp) && timeSinceCleared < THIRTY_SECONDS) {
-          console.log('📋 Notifications were cleared', Math.round(timeSinceCleared / 1000), 'seconds ago, skipping fetch');
           // Notifications were cleared recently, don't re-fetch
           fetchedDBNotificationsRef.current = true;
           
@@ -213,7 +204,6 @@ export function useNotifications() {
           if (remainingTime > 0) {
             setTimeout(() => {
               localStorage.removeItem('notifications_cleared');
-              console.log('📋 Cleared notifications_cleared flag after timeout');
             }, remainingTime);
           } else {
             // Already past 30 seconds, clear immediately
@@ -239,7 +229,6 @@ export function useNotifications() {
             const THIRTY_SECONDS = 30 * 1000;
             
             if (!isNaN(timestamp) && timeSinceCleared < THIRTY_SECONDS) {
-              console.log('📋 Notifications were cleared, skipping fetch (double-check)');
               fetchedDBNotificationsRef.current = true;
               return;
             }
@@ -255,7 +244,6 @@ export function useNotifications() {
             const FIVE_SECONDS = 5 * 1000;
             
             if (!isNaN(timestamp) && timeSinceMarked < FIVE_SECONDS) {
-              console.log('📋 Notifications were marked as read, skipping fetch to prevent overwrite');
               fetchedDBNotificationsRef.current = true;
               return;
             }
@@ -275,7 +263,7 @@ export function useNotifications() {
         const data = await response.json();
         const dbNotifications = data.notifications || [];
 
-        console.log(`📥 Fetched ${dbNotifications.length} notifications from database`);
+        
 
         if (dbNotifications.length > 0) {
           
@@ -287,7 +275,7 @@ export function useNotifications() {
             return true;
           });
 
-          console.log(`📥 Adding ${filteredNotifications.length} filtered notifications to context`);
+          
 
           // Add each notification to the context, but only if it doesn't already exist
           // This prevents re-adding notifications that were cleared
@@ -309,12 +297,12 @@ export function useNotifications() {
           });
 
         } else {
-          console.log('📥 No notifications found in database');
+          
         }
 
         fetchedDBNotificationsRef.current = true;
       } catch (error: any) {
-        console.error('❌ Error fetching database notifications:', error.message);
+        
         // Don't block the app if fetching fails
       }
     };
@@ -463,7 +451,7 @@ export function useNotifications() {
   // Create stable handler functions using useCallback
   const handleNewComment = useCallback((data: NotificationData) => {
     if (!user) {
-      console.error('❌ handleNewComment: No user available');
+      
       return;
     }
     
@@ -497,13 +485,7 @@ export function useNotifications() {
       return;
     }
 
-    // Log for debugging
-    console.log('📨 New comment notification received:', {
-      commenterId: data.commenterId,
-      userId: user.id,
-      role: user.role,
-      complaintId: data.complaintId,
-    });
+    
 
     // Add to notification context
     try {
@@ -515,7 +497,7 @@ export function useNotifications() {
         commenterName: data.commenterName,
       });
     } catch (error) {
-      console.error('❌ Failed to add notification to context:', error);
+      
     }
 
     try {
@@ -542,19 +524,17 @@ export function useNotifications() {
         }
       );
     } catch (error) {
-      console.error('❌ Failed to show toast:', error);
+      
     }
   }, [user, addNotification]);
 
   // Create stable handler for reminder due using useCallback
   const handleReminderDue = useCallback((data: NotificationData) => {
-    console.log('🔔 handleReminderDue called with data:', data);
     
     // Skip if this reminder was suppressed (deleted/dismissed)
     if (data.reminderId) {
       const suppressed = getSuppressedReminderIds();
       if (suppressed.has(data.reminderId)) {
-        console.log('🔕 Reminder suppressed, skipping:', data.reminderId);
         return;
       }
     }
@@ -566,7 +546,6 @@ export function useNotifications() {
     // Check if we've processed this exact event in the last 2 seconds
     const lastProcessed = processedEventsRef.current.get(eventKey);
     if (lastProcessed && (now - lastProcessed) < 2000) {
-      console.log('📋 Duplicate reminder_due event detected, skipping');
       return;
     }
     
@@ -588,12 +567,7 @@ export function useNotifications() {
       message: data.message,
     });
     
-    console.log('🔔 Setting reminder dialog state:', {
-      open: true,
-      title: data.title,
-      message: data.message,
-      complaintId: data.complaintId,
-    });
+    
     
     // Initialize audio context if needed (dialog opening counts as user interaction)
     if (!audioContextInstance) {
@@ -612,11 +586,10 @@ export function useNotifications() {
         complaintId: data.complaintId,
         reminderId: data.reminderId,
       };
-      console.log('🔔 Setting dialog state from', prev, 'to', newState);
       return newState;
     });
     
-    console.log('🔔 Reminder dialog state set, should be visible now');
+    
     
     // Also show toast notification
     toast.warning(
@@ -719,8 +692,6 @@ export function useNotifications() {
   // Socket.io real-time notifications
   useEffect(() => {
     if (!socket || !user) {
-      if (!socket) {
-      }
       return;
     }
 
@@ -897,15 +868,11 @@ export function useNotifications() {
 
     // handleReminderDue is now defined outside useEffect using useCallback
 
-    // Add a test listener to verify socket is working
-    const testHandler = (data: any) => {
-      toast.info('Test notification received!');
-    };
+    
 
     // Function to register listeners
     const registerListeners = () => {
       if (!socket || !socket.connected) {
-        console.log('📡 Cannot register listeners - socket not connected');
         return;
       }
 
@@ -918,9 +885,7 @@ export function useNotifications() {
       socket.removeAllListeners('reminder_due');
       socket.off('test_event');
       
-      console.log('📡 Registering socket listeners for user:', user?.id);
-      console.log('📡 Socket connected:', socket.connected);
-      console.log('📡 Socket ID:', socket.id);
+      
       
       // Register new listeners
       socket.on('new_complaint', handleNewComplaint);
@@ -928,33 +893,23 @@ export function useNotifications() {
       socket.on('complaint_updated', handleComplaintUpdated);
       socket.on('new_comment', handleNewComment);
       socket.on('reminder_due', (data) => {
-        console.log('🔔🔔🔔 reminder_due event received on socket:', data);
-        console.log('🔔🔔🔔 Current user ID:', user?.id);
-        console.log('🔔🔔🔔 Handler function:', handleReminderDue);
         
         // Handle broadcast fallback
         if (data._broadcast && data._targetUserId) {
           if (String(user?.id) !== String(data._targetUserId)) {
-            console.log('🔔🔔🔔 Ignoring broadcast - not for this user');
             return;
           }
-          console.log('🔔🔔🔔 Processing broadcast fallback event');
+          
         }
         
         try {
           handleReminderDue(data);
         } catch (error) {
-          console.error('❌ Error in handleReminderDue:', error);
+          
         }
       });
       
-      // Also listen for broadcast events
-      socket.onAny((eventName, ...args) => {
-        if (eventName === 'reminder_due') {
-          console.log('🔔🔔🔔 Received reminder_due via onAny:', args);
-        }
-      });
-      socket.on('test_event', testHandler);
+      
       
     };
 
@@ -985,7 +940,7 @@ export function useNotifications() {
         socket.off('new_comment', handleNewComment);
         // Remove all reminder_due listeners
       socket.removeAllListeners('reminder_due');
-        socket.off('test_event', testHandler);
+        
       };
     }
 
@@ -997,52 +952,24 @@ export function useNotifications() {
       socket.off('new_comment', handleNewComment);
       // Remove all reminder_due listeners
       socket.removeAllListeners('reminder_due');
-      socket.off('test_event', testHandler);
+      socket.removeAllListeners('reminder_due');
     };
 
     return cleanup;
   }, [socket, user?.id, user?.role, handleNewComment, handleReminderDue, addNotification]);
 
-  // Debug: Log dialog state changes
-  useEffect(() => {
-    console.log('🔔 Reminder dialog state changed:', reminderDialog);
-  }, [reminderDialog]);
+  
 
-  // Expose test function to window for manual testing (dev only)
-  useEffect(() => {
-    if (typeof window !== 'undefined' && process.env.NODE_ENV === 'development') {
-      (window as any).testReminderDialog = () => {
-        console.log('🧪 Testing reminder dialog manually');
-        console.log('🧪 Current dialog state:', reminderDialog);
-        const testData = {
-          open: true,
-          title: 'Test Reminder: Sample Complaint',
-          message: 'This is a test reminder message to verify the dialog popup is working correctly.',
-          complaintId: 'test-complaint-id',
-        };
-        console.log('🧪 Setting dialog state to:', testData);
-        setReminderDialog(testData);
-        playBeepSound();
-        // Force a re-check after a moment
-        setTimeout(() => {
-          console.log('🧪 Dialog state after setting:', reminderDialog);
-        }, 100);
-      };
-      console.log('🧪 testReminderDialog function exposed to window. Call window.testReminderDialog() to test.');
-    }
-  }, []);
+  
 
-  // Force render check
-  console.log('🔔 Rendering reminder dialog with state:', reminderDialog);
+  
 
   return (
     <>
       {/* Reminder Dialog Popup */}
       <Dialog open={reminderDialog.open} onOpenChange={(open) => {
-        console.log('🔔 Dialog onOpenChange called:', open, 'Current state:', reminderDialog);
         setReminderDialog(prev => {
           const newState = { ...prev, open };
-          console.log('🔔 Setting new dialog state:', newState);
           return newState;
         });
       }}>

@@ -39,7 +39,7 @@ export async function shouldSendEmail(
         return true;
     }
   } catch (error) {
-    console.error('Error checking email preferences:', error);
+    
     // Default to true on error to ensure notifications are sent
     return true;
   }
@@ -52,12 +52,12 @@ export async function sendEmail(
   text?: string
 ): Promise<void> {
   if (!process.env.SENDGRID_API_KEY) {
-    console.warn('⚠️ SENDGRID_API_KEY not set - email notifications disabled');
+    
     return;
   }
 
   if (!to || !to.trim()) {
-    console.warn('⚠️ Cannot send email - no recipient address');
+    
     return;
   }
 
@@ -69,12 +69,12 @@ export async function sendEmail(
       text: text || subject,
       html,
     });
-    console.log(`✅ Email sent successfully to ${to}`);
+    
   } catch (error: any) {
-    console.error('❌ SendGrid error:', error);
+    
     // Don't throw - email failures shouldn't break the main flow
     if (error.response) {
-      console.error('SendGrid response:', error.response.body);
+      
     }
   }
 }
@@ -92,7 +92,7 @@ export async function sendEmailIfEnabled(
 ): Promise<void> {
   const enabled = await shouldSendEmail(userId, notificationType);
   if (!enabled) {
-    console.log(`📧 Email notification skipped for user ${userId} - ${notificationType} disabled`);
+    
     return;
   }
 

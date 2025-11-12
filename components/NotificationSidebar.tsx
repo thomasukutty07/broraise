@@ -86,11 +86,11 @@ export function NotificationSidebar() {
                       if (isMarkingAll) return;
                       setIsMarkingAll(true);
                       try {
-                        console.log('🔄 Mark all as read clicked');
+                        
                         await markAllAsRead();
                         toast.success('All notifications marked as read');
                       } catch (error: any) {
-                        console.error('❌ Error marking all as read:', error);
+                        
                         toast.error(error?.message || 'Failed to mark all notifications as read');
                       } finally {
                         setIsMarkingAll(false);
@@ -111,11 +111,11 @@ export function NotificationSidebar() {
                       if (isClearingAll) return;
                       setIsClearingAll(true);
                       try {
-                        console.log('🔄 Clear all clicked');
+                        
                         await clearAll();
                         toast.success('All notifications cleared');
                       } catch (error: any) {
-                        console.error('❌ Error clearing all:', error);
+                        
                         toast.error(error?.message || 'Failed to clear all notifications');
                       } finally {
                         setIsClearingAll(false);

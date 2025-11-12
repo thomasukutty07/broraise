@@ -13,21 +13,16 @@ interface ProcessedReminder {
 
 // Track which reminders we've already notified to avoid duplicates
 const processedReminders = new Map<string, number>();
-const CHECK_INTERVAL = 10000; // Check every 10 seconds (for testing, change back to 60000 for production)
+const CHECK_INTERVAL = 60000; // Check every 60 seconds
 
 /**
  * Check for reminders that are due and send notifications
  */
 export async function checkReminders() {
   try {
-    console.log('⏰ checkReminders() called');
     await connectDB();
-    console.log('⏰ Database connected');
     
     const now = new Date();
-    console.log('⏰ Reminder checker running at:', now.toISOString());
-    console.log('⏰ Current time:', now.getTime(), 'ISO:', now.toISOString());
-    console.log('⏰ Current time local:', now.toLocaleString());
     
     // Find reminders that are due (reminderDate <= now) and pending
     const dueReminders = await Reminder.find({
@@ -38,47 +33,18 @@ export async function checkReminders() {
       .populate('assignedTo', 'name email')
       .populate('createdBy', 'name email');
 
-    console.log(`⏰ Found ${dueReminders.length} due reminder(s)`);
     
-    // Log all reminders for debugging
-    if (dueReminders.length > 0) {
-      console.log('⏰ Due reminders details:');
-      dueReminders.forEach((reminder, index) => {
-        const reminderDate = new Date(reminder.reminderDate);
-        const assignedToId = reminder.assignedTo?._id?.toString() || reminder.assignedTo?.toString();
-        console.log(`  ${index + 1}. Reminder ID: ${reminder._id}, Date: ${reminderDate.toISOString()}, AssignedTo: ${assignedToId}`);
-      });
-    } else {
-      // Check if there are any reminders at all
-      const allReminders = await Reminder.find({ status: { $ne: 'completed' } })
-        .select('reminderDate assignedTo status')
-        .limit(5);
-      console.log(`⏰ Total non-completed reminders: ${allReminders.length}`);
-      if (allReminders.length > 0) {
-        console.log('⏰ Sample reminders (not yet due):');
-        allReminders.forEach((reminder, index) => {
-          const reminderDate = new Date(reminder.reminderDate);
-          const assignedToId = reminder.assignedTo?.toString();
-          const isDue = reminderDate <= now;
-          console.log(`  ${index + 1}. Date: ${reminderDate.toISOString()}, AssignedTo: ${assignedToId}, Status: ${(reminder as any).status}, Due: ${isDue ? 'YES' : 'NO'}`);
-        });
-      }
-    }
 
     for (const reminder of dueReminders) {
       const reminderId = reminder._id.toString();
       const assignedToId = reminder.assignedTo?._id?.toString() || reminder.assignedTo?.toString();
       
-      console.log(`⏰ Processing reminder ${reminderId} for user ${assignedToId}`);
-      
       if (!assignedToId) {
-        console.log(`⏰ Skipping reminder ${reminderId} - no assignedTo`);
         continue;
       }
       
       // Ensure assignedToId is a string
       const userId = String(assignedToId);
-      console.log(`⏰ User ID format check - original: ${assignedToId}, stringified: ${userId}`);
 
       // Check if we've already notified for this reminder in the last 5 minutes
       // This prevents duplicate notifications if the checker runs multiple times
@@ -86,14 +52,12 @@ export async function checkReminders() {
       const fiveMinutesAgo = Date.now() - 5 * 60 * 1000;
       
       if (lastNotified && lastNotified > fiveMinutesAgo) {
-        console.log(`⏰ Skipping reminder ${reminderId} - already notified ${Math.round((Date.now() - lastNotified) / 1000)}s ago`);
         continue; // Already notified recently
       }
       
       // Double-check the reminder is actually due
       const reminderDate = new Date(reminder.reminderDate);
       if (reminderDate > now) {
-        console.log(`⏰ Skipping reminder ${reminderId} - not yet due. Date: ${reminderDate.toISOString()}, Now: ${now.toISOString()}`);
         continue;
       }
 
@@ -113,7 +77,6 @@ export async function checkReminders() {
       };
 
       // Send real-time notification via Socket.io
-      console.log(`⏰ Sending reminder_due event to user ${userId} (room: user:${userId}):`, notificationData);
       emitToUser(userId, 'reminder_due', notificationData);
 
       // Save notification to database for offline users
@@ -136,7 +99,7 @@ export async function checkReminders() {
         );
       }
 
-      console.log(`✅ Reminder notification sent to user ${userId} for reminder ${reminderId}`);
+      
     }
 
     // Clean up old processed reminders (older than 1 hour) to prevent memory leak
@@ -159,30 +122,24 @@ let isRunning = false;
  */
 export function startReminderChecker() {
   if (isRunning) {
-    console.log('⚠️ Reminder checker is already running');
     return;
   }
 
-  console.log('🔄 Starting reminder checker service...');
-  console.log('🔄 Check interval:', CHECK_INTERVAL, 'ms (', CHECK_INTERVAL / 1000, 'seconds)');
   isRunning = true;
 
   // Run immediately on start
-  console.log('🔄 Running initial reminder check...');
   checkReminders().catch(err => {
     console.error('❌ Error in initial reminder check:', err);
   });
 
   // Then check every interval
   reminderInterval = setInterval(() => {
-    console.log('🔄 Interval triggered - running reminder check...');
     checkReminders().catch(err => {
       console.error('❌ Error in interval reminder check:', err);
     });
   }, CHECK_INTERVAL);
 
-  console.log(`✅ Reminder checker started (checking every ${CHECK_INTERVAL / 1000} seconds)`);
-  console.log('✅ Reminder checker will run at:', new Date(Date.now() + CHECK_INTERVAL).toISOString());
+  
 }
 
 /**
@@ -193,7 +150,6 @@ export function stopReminderChecker() {
     clearInterval(reminderInterval);
     reminderInterval = null;
     isRunning = false;
-    console.log('🛑 Reminder checker stopped');
   }
 }
 

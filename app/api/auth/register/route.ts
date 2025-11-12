@@ -8,6 +8,7 @@ const registerSchema = z.object({
   name: z.string().min(2).max(100),
   email: z.string().email(),
   password: z.string().min(6),
+  // role is intentionally ignored for public registration to prevent privilege escalation
   role: z.enum(['student', 'staff', 'admin', 'management']).optional(),
   branch: z.string().optional(),
 });
@@ -25,11 +26,14 @@ export async function POST(request: NextRequest) {
     }
 
     const hashedPassword = await hashPassword(validatedData.password);
+    // Enforce student role for public registration regardless of input
+    const enforcedRole = 'student';
+
     const user = await User.create({
       name: validatedData.name,
       email: validatedData.email,
       password: hashedPassword,
-      role: validatedData.role || 'student',
+      role: enforcedRole,
       branch: validatedData.branch || undefined,
     });
 

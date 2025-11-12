@@ -43,7 +43,7 @@ async function getHandler(req: AuthenticatedRequest) {
 
     return NextResponse.json({ notifications: formattedNotifications });
   } catch (error: any) {
-    console.error('Error fetching notifications:', error);
+    
     return NextResponse.json({ error: error.message || 'Failed to fetch notifications' }, { status: 500 });
   }
 }
@@ -52,19 +52,13 @@ async function putHandler(req: AuthenticatedRequest) {
   try {
     await connectDB();
     
-    console.log('📥 PUT /api/notifications - Request received', {
-      userId: req.user?.userId,
-      userRole: req.user?.role,
-      method: req.method,
-      url: req.url,
-    });
+    
 
     let body;
     try {
       body = await req.json();
-      console.log('📥 Request body:', body);
     } catch (parseError: any) {
-      console.error('❌ Error parsing request body:', parseError);
+      
       return NextResponse.json({ 
         error: 'Invalid request body',
         details: parseError.message 
@@ -73,12 +67,7 @@ async function putHandler(req: AuthenticatedRequest) {
 
     const { notificationIds, markAllAsRead } = body;
     
-    console.log('📥 Processing request:', {
-      notificationIds,
-      markAllAsRead,
-      notificationIdsType: Array.isArray(notificationIds) ? 'array' : typeof notificationIds,
-      notificationIdsLength: Array.isArray(notificationIds) ? notificationIds.length : 'N/A',
-    });
+    
 
     if (markAllAsRead) {
       // Mark all unread notifications as read for this user
@@ -89,7 +78,7 @@ async function putHandler(req: AuthenticatedRequest) {
         },
         { read: true }
       );
-      console.log(`✅ Marked ${result.modifiedCount} notifications as read`);
+      
       return NextResponse.json({ 
         message: 'All notifications marked as read',
         count: result.modifiedCount 
@@ -103,7 +92,7 @@ async function putHandler(req: AuthenticatedRequest) {
         .map((id: string) => new mongoose.Types.ObjectId(id));
       
       if (objectIds.length === 0) {
-        console.error('❌ Invalid notification IDs provided:', notificationIds);
+        
         return NextResponse.json({ 
           error: 'Invalid notification IDs',
           provided: notificationIds 
@@ -119,7 +108,7 @@ async function putHandler(req: AuthenticatedRequest) {
       }).select('_id read');
 
       if (existingNotifications.length === 0) {
-        console.warn(`⚠️ No notifications found for user ${userId} with IDs:`, objectIds);
+        
         return NextResponse.json({ 
           error: 'Notifications not found or do not belong to user',
           count: 0 
@@ -135,11 +124,7 @@ async function putHandler(req: AuthenticatedRequest) {
         { read: true }
       );
       
-      console.log(`✅ Marked ${result.modifiedCount} notification(s) as read for user ${userId}`, {
-        requested: objectIds.length,
-        found: existingNotifications.length,
-        modified: result.modifiedCount,
-      });
+      
       
       return NextResponse.json({ 
         message: 'Notifications marked as read',
@@ -149,7 +134,7 @@ async function putHandler(req: AuthenticatedRequest) {
 
     return NextResponse.json({ error: 'Invalid request' }, { status: 400 });
   } catch (error: any) {
-    console.error('Error updating notifications:', error);
+    
     return NextResponse.json({ error: error.message || 'Failed to update notifications' }, { status: 500 });
   }
 }
@@ -166,7 +151,6 @@ async function deleteHandler(req: AuthenticatedRequest) {
       const result = await Notification.deleteMany({
         userId: new mongoose.Types.ObjectId(req.user!.userId),
       });
-      console.log(`✅ Deleted ${result.deletedCount} notification(s)`);
       return NextResponse.json({ 
         message: 'All notifications deleted',
         count: result.deletedCount 
@@ -188,7 +172,6 @@ async function deleteHandler(req: AuthenticatedRequest) {
         _id: { $in: objectIds },
         userId: new mongoose.Types.ObjectId(req.user!.userId),
       });
-      console.log(`✅ Deleted ${result.deletedCount} notification(s)`);
       return NextResponse.json({ 
         message: 'Notifications deleted',
         count: result.deletedCount 
@@ -197,7 +180,7 @@ async function deleteHandler(req: AuthenticatedRequest) {
 
     return NextResponse.json({ error: 'Invalid request' }, { status: 400 });
   } catch (error: any) {
-    console.error('Error deleting notifications:', error);
+    
     return NextResponse.json({ error: error.message || 'Failed to delete notifications' }, { status: 500 });
   }
 }
